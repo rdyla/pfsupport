@@ -1,6 +1,53 @@
 import { Hono } from "hono";
-const app = new Hono<{ Bindings: Env }>();
+import { authMiddleware, type PortalUser } from "./auth";
+import casesRouter from "./routes/cases";
+import kbRouter from "./routes/kb";
+import accountsRouter from "./routes/accounts";
+import usersRouter from "./routes/users";
+import { d365Fetch } from "./d365";
 
-app.get("/api/", (c) => c.json({ name: "Cloudflare" }));
+type Variables = { user: PortalUser };
+
+const app = new Hono<{ Bindings: Env; Variables: Variables }>();
+
+// Auth middleware for all portal routes
+app.use("/api/portal/*", authMiddleware);
+
+// Current user info
+app.get("/api/portal/me", (c) => c.json(c.get("user")));
+
+// Customer's own account contacts (for notification contact picker)
+app.get("/api/portal/me/contacts", async (c) => {
+	const user = c.get("user");
+	if (!user.contactId) return c.json([]);
+	const contactRes = await d365Fetch(c.env, `/contacts(${user.contactId})?$select=_parentcustomerid_value`);
+	if (!contactRes.ok) return c.json([]);
+	const { _parentcustomerid_value: accountId } = await contactRes.json() as { _parentcustomerid_value: string };
+	if (!accountId) return c.json([]);
+	const res = await d365Fetch(c.env, `/contacts?$filter=_parentcustomerid_value eq '${accountId}'&$select=contactid,fullname,emailaddress1&$orderby=fullname`);
+	if (!res.ok) return c.json([]);
+	const data = await res.json() as { value: any[] };
+	return c.json(data.value.map((ct: any) => ({ id: ct.contactid, name: ct.fullname, email: ct.emailaddress1 })));
+});
+
+// Cases routes
+app.route("/api/portal/cases", casesRouter);
+
+// Knowledge base routes
+app.route("/api/portal/kb", kbRouter);
+
+// Accounts + contacts lookup
+app.route("/api/portal/accounts", accountsRouter);
+
+// Internal user search (for escalation engineer picker)
+app.route("/api/portal/users", usersRouter);
+
+// Dev/test endpoints
+app.get("/api/test", (c) => c.json({ ok: true }));
+app.get("/api/d365/ping", async (c) => {
+	const res = await d365Fetch(c.env, "/incidents?$top=1&$select=ticketnumber");
+	if (!res.ok) return c.json({ error: await res.text() }, res.status as any);
+	return c.json({ ok: true, data: await res.json() });
+});
 
 export default app;
