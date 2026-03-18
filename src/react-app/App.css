@@ -265,6 +265,23 @@
 .btn-cancel { background: var(--danger-bg); color: var(--danger); border: 1px solid #fca5a5; }
 .btn-cancel:hover { background: #fee2e2; }
 
+/* Cases mobile card list (hidden on desktop) */
+.cases-cards { display: flex; flex-direction: column; gap: 0; }
+.cases-card {
+	padding: 0.875rem 1rem;
+	border-bottom: 1px solid var(--border);
+	cursor: pointer;
+	transition: background 0.1s;
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+}
+.cases-card:last-child { border-bottom: none; }
+.cases-card:active { background: var(--bg); }
+.cases-card-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.cases-card-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.cases-card-meta { font-size: 12px; color: var(--text-muted); }
+
 /* File input */
 .file-label {
 	display: inline-flex;
@@ -282,3 +299,31 @@
 .file-label:hover { background: var(--bg); }
 .file-input { display: none; }
 .file-name { font-size: 13px; color: var(--text-muted); }
+
+/* ── Mobile ──────────────────────────────────────────── */
+@media (max-width: 640px) {
+	.header { padding: 0 1rem; height: 64px; }
+	.header-logo { height: 46px; }
+	.header-user { gap: 0.5rem; font-size: 13px; }
+	.header-welcome { display: none; }
+
+	.nav-tabs { padding: 0 0.5rem; }
+	.nav-tab { padding: 0.6rem 0.85rem; font-size: 13px; }
+
+	.main { padding: 1rem 0.75rem; }
+	.page-header h1 { font-size: 1.2rem; }
+
+	.form-card { padding: 1.25rem 1rem; }
+	.form-actions { flex-wrap: wrap; }
+	.filter-search { min-width: 0; }
+
+	/* Hide table, show card list */
+	.cases-table { display: none; }
+	.cases-cards { display: flex; }
+
+	.add-note-actions { gap: 0.5rem; }
+}
+
+@media (min-width: 641px) {
+	.cases-cards { display: none; }
+}

@@ -98,52 +98,73 @@ export default function CasesPage({ user }: Props) {
 					</div>
 				)}
 				{!loading && !searching && paginated.length > 0 && (
-					<table className="cases-table">
-						<thead>
-							<tr>
-								<th>Ticket #</th>
-								<th>Title</th>
-								{isStaff && <th>Account</th>}
-								<th>Priority</th>
-								<th>Status</th>
-								{isStaff && <th>Owner</th>}
-								<th>Opened</th>
-							</tr>
-						</thead>
-						<tbody>
-							{paginated.map((c) => (
-								<tr key={c.id} onClick={() => navigate(`/cases/${c.id}`)}>
-									<td className="cell-nowrap">
-										<span className="ticket-number">{c.ticketNumber}</span>
-									</td>
-									<td>{c.title}</td>
-									{isStaff && (
-										<td style={{ fontSize: "13px", color: "var(--text-muted)" }}>
-											{c.accountName ?? "—"}
-										</td>
-									)}
-									<td className="cell-nowrap">
-										<span className={`badge badge-${c.priority.toLowerCase()}`}>
-											{c.priority}
-										</span>
-									</td>
-									<td className="cell-nowrap">
-										<span className={`badge badge-${c.state.toLowerCase()}`}>
-											{c.status}
-										</span>
-									</td>
-									{isStaff && (
-										<td style={{ fontSize: "13px", color: "var(--text-muted)" }}>
-											{c.owner ?? "—"}
-										</td>
-									)}
-									<td className="cell-nowrap" style={{ color: "var(--text-muted)", fontSize: "13px" }}>
-										{formatDate(c.createdOn)}
-									</td>
+					<>
+						<table className="cases-table">
+							<thead>
+								<tr>
+									<th>Ticket #</th>
+									<th>Title</th>
+									{isStaff && <th>Account</th>}
+									<th>Priority</th>
+									<th>Status</th>
+									{isStaff && <th>Owner</th>}
+									<th>Opened</th>
 								</tr>
+							</thead>
+							<tbody>
+								{paginated.map((c) => (
+									<tr key={c.id} onClick={() => navigate(`/cases/${c.id}`)}>
+										<td className="cell-nowrap">
+											<span className="ticket-number">{c.ticketNumber}</span>
+										</td>
+										<td>{c.title}</td>
+										{isStaff && (
+											<td style={{ fontSize: "13px", color: "var(--text-muted)" }}>
+												{c.accountName ?? "—"}
+											</td>
+										)}
+										<td className="cell-nowrap">
+											<span className={`badge badge-${c.priority.toLowerCase()}`}>
+												{c.priority}
+											</span>
+										</td>
+										<td className="cell-nowrap">
+											<span className={`badge badge-${c.state.toLowerCase()}`}>
+												{c.status}
+											</span>
+										</td>
+										{isStaff && (
+											<td style={{ fontSize: "13px", color: "var(--text-muted)" }}>
+												{c.owner ?? "—"}
+											</td>
+										)}
+										<td className="cell-nowrap" style={{ color: "var(--text-muted)", fontSize: "13px" }}>
+											{formatDate(c.createdOn)}
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+
+						<div className="cases-cards">
+							{paginated.map((c) => (
+								<div key={c.id} className="cases-card" onClick={() => navigate(`/cases/${c.id}`)}>
+									<div className="cases-card-title">{c.title}</div>
+									<div className="cases-card-row">
+										<span className={`badge badge-${c.state.toLowerCase()}`}>{c.status}</span>
+										<span className={`badge badge-${c.priority.toLowerCase()}`}>{c.priority}</span>
+										<span className="ticket-number cases-card-meta">{c.ticketNumber}</span>
+									</div>
+									<div className="cases-card-row">
+										{isStaff && c.accountName && (
+											<span className="cases-card-meta">{c.accountName}</span>
+										)}
+										<span className="cases-card-meta">{formatDate(c.createdOn)}</span>
+									</div>
+								</div>
 							))}
-						</tbody>
-					</table>
+						</div>
+					</>
 				)}
 			</div>
 

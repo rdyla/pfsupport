@@ -14,7 +14,7 @@ export default function Layout({ user, children }: Props) {
 				<img src={logo} alt="Packet Fusion" className="header-logo" />
 				{user && (
 					<div className="header-user">
-						<span>Welcome, <strong>{user.name}</strong></span>
+						<span className="header-welcome">Welcome, <strong>{user.name}</strong></span>
 						{user.isInternal && (
 							<span className="badge badge-active">Staff</span>
 						)}
