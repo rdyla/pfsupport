@@ -55,7 +55,13 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
 	getMe: () => request<PortalUser>("/api/portal/me"),
-	getCases: (search?: string) => request<Case[]>(search ? `/api/portal/cases?search=${encodeURIComponent(search)}` : "/api/portal/cases"),
+	getCases: (search?: string, mine?: boolean) => {
+		const params = new URLSearchParams();
+		if (search) params.set("search", search);
+		if (mine) params.set("mine", "true");
+		const qs = params.toString();
+		return request<Case[]>(`/api/portal/cases${qs ? `?${qs}` : ""}`);
+	},
 	getCase: (id: string) => request<CaseDetail>(`/api/portal/cases/${id}`),
 	createCase: (data: { title: string; description: string; prioritycode: number; accountId?: string; primaryContactId?: string; notificationContactId?: string; escalationEngineerId?: string }) =>
 		request<{ id: string; ticketNumber: string }>("/api/portal/cases", {

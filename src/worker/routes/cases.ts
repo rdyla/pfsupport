@@ -32,7 +32,10 @@ cases.get("/", async (c) => {
 
 	let filter: string;
 	if (user.isInternal) {
-		const baseFilter = "statecode ge 0";
+		const mine = c.req.query("mine") === "true";
+		const baseFilter = mine
+			? `owninguser/internalemailaddress eq '${user.email.replace(/'/g, "''")}'`
+			: "statecode ge 0";
 		if (search) {
 			const s = search.replace(/'/g, "''");
 			filter = `(${baseFilter}) and (contains(ticketnumber,'${s}') or contains(title,'${s}') or contains(description,'${s}'))`;

@@ -18,26 +18,28 @@ export default function CasesPage({ user }: Props) {
 	const [search, setSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState("All Statuses");
 	const [priorityFilter, setPriorityFilter] = useState("All Priorities");
+	const [mineOnly, setMineOnly] = useState(true);
 	const [page, setPage] = useState(0);
 	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const navigate = useNavigate();
 
-	const fetchCases = (searchTerm?: string) => {
+	const fetchCases = (searchTerm?: string, mine?: boolean) => {
 		if (searchTerm) setSearching(true);
 		else setLoading(true);
-		api.getCases(searchTerm || undefined)
+		const useMine = isStaff && (mine ?? mineOnly);
+		api.getCases(searchTerm || undefined, useMine)
 			.then(setCases)
 			.catch((e) => setError(e.message))
 			.finally(() => { setLoading(false); setSearching(false); });
 	};
 
-	useEffect(() => { fetchCases(); }, []);
+	useEffect(() => { fetchCases(); }, [mineOnly]);
 
 	const handleSearch = (value: string) => {
 		setSearch(value);
 		setPage(0);
 		if (debounceRef.current) clearTimeout(debounceRef.current);
-		debounceRef.current = setTimeout(() => fetchCases(value.trim() || undefined), 400);
+		debounceRef.current = setTimeout(() => fetchCases(value.trim() || undefined, mineOnly), 400);
 	};
 
 	const filtered = cases.filter((c) => {
@@ -62,6 +64,22 @@ export default function CasesPage({ user }: Props) {
 			</div>
 
 			<div className="case-filters">
+				{isStaff && (
+					<>
+						<button
+							className={`btn btn-sm ${mineOnly ? "btn-primary" : "btn-secondary"}`}
+							onClick={() => { setMineOnly(true); setPage(0); }}
+						>
+							My Cases
+						</button>
+						<button
+							className={`btn btn-sm ${!mineOnly ? "btn-primary" : "btn-secondary"}`}
+							onClick={() => { setMineOnly(false); setPage(0); }}
+						>
+							All Cases
+						</button>
+					</>
+				)}
 				<input
 					type="search"
 					value={search}
@@ -81,7 +99,7 @@ export default function CasesPage({ user }: Props) {
 						onClick={() => {
 							if (debounceRef.current) clearTimeout(debounceRef.current);
 							setSearch(""); setStatusFilter("All Statuses"); setPriorityFilter("All Priorities"); setPage(0);
-							fetchCases();
+							fetchCases(undefined, mineOnly);
 						}}
 					>
 						Clear
