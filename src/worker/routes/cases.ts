@@ -88,7 +88,7 @@ cases.get("/:id", async (c) => {
 	const { id } = c.req.param();
 
 	const select = "incidentid,ticketnumber,title,description,prioritycode,statuscode,statecode,createdon,_customerid_value,_primarycontactid_value,_amc_notificationcontact1_value,_am_escalationengineer_value";
-	const expand = "owninguser($select=fullname)";
+	const expand = "owninguser($select=fullname,systemuserid)";
 	const res = await d365Fetch(c.env, `/incidents(${id})?$select=${select}&$expand=${expand}`,
 		{ headers: { Prefer: 'odata.include-annotations="OData.Community.Display.V1.FormattedValue"' } });
 
@@ -110,6 +110,7 @@ cases.get("/:id", async (c) => {
 		statuscode: raw.statuscode as number,
 		createdOn: raw.createdon,
 		owner: raw.owninguser?.fullname ?? null,
+		ownerId: raw.owninguser?.systemuserid ?? null,
 		accountId: raw._customerid_value ?? null,
 		accountName: raw["_customerid_value@OData.Community.Display.V1.FormattedValue"] ?? null,
 		primaryContactId: raw._primarycontactid_value ?? null,
@@ -355,7 +356,8 @@ cases.post("/:id/status", async (c) => {
 // PATCH /api/portal/cases/:id/contacts — update notification contact + escalation engineer
 cases.patch("/:id/contacts", async (c) => {
 	const { id } = c.req.param();
-	const body = await c.req.json() as { primaryContactId?: string | null; notificationContactId?: string | null; escalationEngineerId?: string | null };
+	const user = c.get("user");
+	const body = await c.req.json() as { primaryContactId?: string | null; notificationContactId?: string | null; escalationEngineerId?: string | null; ownerId?: string | null };
 
 	const payload: any = {};
 	if ("primaryContactId" in body) {
@@ -378,6 +380,9 @@ cases.patch("/:id/contacts", async (c) => {
 		} else {
 			payload["am_escalationengineer"] = null;
 		}
+	}
+	if ("ownerId" in body && user.isInternal && body.ownerId) {
+		payload["ownerid@odata.bind"] = `/systemusers(${body.ownerId})`;
 	}
 
 	const res = await d365Fetch(c.env, `/incidents(${id})`, { method: "PATCH", body: JSON.stringify(payload) });

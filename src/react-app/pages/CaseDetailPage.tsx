@@ -28,6 +28,7 @@ export default function CaseDetailPage({ user }: Props) {
 	const [pickedPrimaryId, setPickedPrimaryId] = useState<string>("");
 	const [pickedContactId, setPickedContactId] = useState<string>("");
 	const [pickedEngineer, setPickedEngineer] = useState<UserResult | null>(null);
+	const [pickedOwner, setPickedOwner] = useState<UserResult | null>(null);
 	const [contactSaving, setContactSaving] = useState(false);
 
 	const load = () => {
@@ -91,6 +92,11 @@ export default function CaseDetailPage({ user }: Props) {
 				? { id: cd.escalationEngineerId, name: cd.escalationEngineerName ?? "", email: "" }
 				: null
 		);
+		setPickedOwner(
+			cd.ownerId
+				? { id: cd.ownerId, name: cd.owner ?? "", email: "" }
+				: null
+		);
 		// Staff loads contacts via account lookup; customers load their own account's contacts
 		if (user?.isInternal) {
 			if (cd.accountId) {
@@ -111,7 +117,10 @@ export default function CaseDetailPage({ user }: Props) {
 			await api.updateCaseContacts(id, {
 				primaryContactId: pickedPrimaryId || null,
 				notificationContactId: pickedContactId || null,
-				...(user?.isInternal ? { escalationEngineerId: pickedEngineer?.id ?? null } : {}),
+				...(user?.isInternal ? {
+					escalationEngineerId: pickedEngineer?.id ?? null,
+					ownerId: pickedOwner?.id ?? null,
+				} : {}),
 			});
 			load();
 			setShowContactEditor(false);
@@ -361,6 +370,12 @@ export default function CaseDetailPage({ user }: Props) {
 								<div className="form-group" style={{ margin: 0 }}>
 									<label style={{ fontSize: "13px", fontWeight: 600 }}>Escalation Engineer</label>
 									<UserSearch value={pickedEngineer} onChange={setPickedEngineer} placeholder="Search PF staff…" />
+								</div>
+							)}
+							{user?.isInternal && (
+								<div className="form-group" style={{ margin: 0 }}>
+									<label style={{ fontSize: "13px", fontWeight: 600 }}>Owner</label>
+									<UserSearch value={pickedOwner} onChange={setPickedOwner} placeholder="Search PF staff…" />
 								</div>
 							)}
 						</div>

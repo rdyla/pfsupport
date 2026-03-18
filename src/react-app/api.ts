@@ -34,6 +34,7 @@ export interface CaseDetail extends Case {
 	statecode: number;
 	statuscode: number;
 	accountId: string | null;
+	ownerId: string | null;
 	primaryContactId: string | null;
 	primaryContactName: string | null;
 	notificationContactId: string | null;
@@ -80,7 +81,7 @@ export const api = {
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ action, comment }),
 		}),
-	updateCaseContacts: (caseId: string, data: { primaryContactId?: string | null; notificationContactId?: string | null; escalationEngineerId?: string | null }) =>
+	updateCaseContacts: (caseId: string, data: { primaryContactId?: string | null; notificationContactId?: string | null; escalationEngineerId?: string | null; ownerId?: string | null }) =>
 		request("/api/portal/cases/" + caseId + "/contacts", {
 			method: "PATCH",
 			headers: { "Content-Type": "application/json" },
