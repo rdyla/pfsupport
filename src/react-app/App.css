@@ -23,6 +23,101 @@
 }
 .header-user strong { color: #fff; }
 
+/* Profile chip */
+.profile-chip-wrap { position: relative; }
+
+.profile-chip {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	background: rgba(255,255,255,0.1);
+	border: 1px solid rgba(255,255,255,0.18);
+	border-radius: 40px;
+	padding: 0.35rem 0.75rem 0.35rem 0.35rem;
+	cursor: pointer;
+	color: #fff;
+	font-size: 14px;
+	transition: background 0.15s;
+}
+.profile-chip:hover { background: rgba(255,255,255,0.18); }
+
+.profile-avatar {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	background: var(--navy-light);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 13px;
+	font-weight: 600;
+	color: #fff;
+	flex-shrink: 0;
+}
+
+.profile-name { font-weight: 500; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.profile-chevron { color: rgba(255,255,255,0.7); flex-shrink: 0; margin-left: 2px; }
+
+/* Profile popout */
+.profile-popout {
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	width: 260px;
+	background: #fff;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+	z-index: 200;
+	overflow: hidden;
+	animation: popout-in 0.12s ease;
+}
+@keyframes popout-in {
+	from { opacity: 0; transform: translateY(-4px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+
+.profile-popout-header {
+	display: flex;
+	align-items: center;
+	gap: 0.85rem;
+	padding: 1rem;
+}
+
+.profile-popout-avatar {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	background: var(--navy-light);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 15px;
+	font-weight: 600;
+	color: #fff;
+	flex-shrink: 0;
+}
+
+.profile-popout-info { overflow: hidden; }
+.profile-popout-name { font-weight: 600; font-size: 14px; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.profile-popout-email { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.profile-popout-divider { height: 1px; background: var(--border); }
+
+.profile-popout-signout {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	padding: 0.75rem 1rem;
+	color: var(--navy);
+	font-size: 14px;
+	text-decoration: none;
+	transition: background 0.12s;
+}
+.profile-popout-signout:hover { background: var(--bg); }
+.profile-popout-signout svg { color: var(--text-muted); flex-shrink: 0; }
+
 .main { flex: 1; max-width: 1320px; width: 100%; margin: 0 auto; padding: 2rem 1.5rem; }
 
 /* Cards */
@@ -475,8 +570,8 @@
 
 	.header { padding: 0 1rem; height: 64px; }
 	.header-logo { height: 46px; }
-	.header-user { gap: 0.5rem; font-size: 13px; }
-	.header-welcome { display: none; }
+	.profile-chip { padding: 0.3rem 0.6rem 0.3rem 0.3rem; gap: 0.4rem; }
+	.profile-name { display: none; }
 
 	.nav-tabs { padding: 0 0.5rem; }
 	.nav-tab { padding: 0.6rem 0.85rem; font-size: 13px; }
