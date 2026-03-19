@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
 import { api, type PortalUser } from "./api";
 import Layout from "./components/Layout";
@@ -8,6 +8,7 @@ import CaseDetailPage from "./pages/CaseDetailPage";
 import NewCasePage from "./pages/NewCasePage";
 import KBPage from "./pages/KBPage";
 import KBArticlePage from "./pages/KBArticlePage";
+import SplashPage from "./pages/SplashPage";
 
 export default function App() {
 	const [user, setUser] = useState<PortalUser | null>(null);
@@ -32,7 +33,7 @@ export default function App() {
 		<BrowserRouter>
 			<Layout user={user}>
 				<Routes>
-					<Route path="/" element={<Navigate to="/cases" replace />} />
+					<Route path="/" element={<SplashPage />} />
 					<Route path="/cases" element={<CasesPage user={user} />} />
 					<Route path="/cases/new" element={<NewCasePage user={user} />} />
 					<Route path="/cases/:id" element={<CaseDetailPage user={user} />} />

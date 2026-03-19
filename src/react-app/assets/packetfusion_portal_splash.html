@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Packet Fusion – Support Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ─────────────────────────────────────────────
+       RESET & BASE
+    ───────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Barlow', sans-serif;
+      background: #f0f3f7;
+      color: #2c3e55;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─────────────────────────────────────────────
+       HEADER  (matches portal exactly)
+    ───────────────────────────────────────────── */
+    .pf-header {
+      background: #0e1f3d;
+      padding: 10px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .pf-logo-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pf-logo-text {
+      color: #fff;
+      font-size: 20px;
+      font-weight: 400;
+      letter-spacing: .5px;
+      line-height: 1.1;
+    }
+    .pf-logo-text b { font-weight: 700; }
+
+    .pf-powered {
+      color: #6a83a0;
+      font-size: 10px;
+      margin-top: 2px;
+    }
+
+    .pf-header-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: #c8d8ea;
+      font-size: 13px;
+    }
+    .pf-header-right b { color: #fff; }
+
+    .pf-staff-badge {
+      border: 1.5px solid #4a7fc1;
+      color: #7eb3e8;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 12px;
+    }
+
+    .pf-signout {
+      color: #6a83a0;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .pf-signout:hover { color: #c8d8ea; }
+
+    /* ─────────────────────────────────────────────
+       NAV BAR
+    ───────────────────────────────────────────── */
+    .pf-nav {
+      background: #152b4a;
+      padding: 0 28px;
+      display: flex;
+      gap: 0;
+    }
+
+    .pf-nav-item {
+      padding: 11px 18px 9px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #8aa4bf;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: color .2s;
+      text-decoration: none;
+    }
+    .pf-nav-item.active {
+      color: #fff;
+      border-bottom: 3px solid #3bb870;
+    }
+    .pf-nav-item:hover:not(.active) { color: #c0d4e8; }
+
+    /* ─────────────────────────────────────────────
+       PAGE CONTENT WRAPPER
+    ───────────────────────────────────────────── */
+    .pf-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 36px 32px 60px;
+    }
+
+    /* ─────────────────────────────────────────────
+       SPLASH PANEL
+    ───────────────────────────────────────────── */
+    .splash-panel {
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #dde4ef;
+      overflow: hidden;
+      max-width: 780px;
+      margin: 0 auto;
+      box-shadow: 0 4px 24px rgba(14,31,61,.08);
+    }
+
+    /* Hero block */
+    .splash-top {
+      background: #0e1f3d;
+      padding: 36px 40px 32px;
+      border-left: 5px solid #3bb870;
+      position: relative;
+    }
+
+    .splash-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(59,184,112,.15);
+      border: 1px solid rgba(59,184,112,.35);
+      color: #3bb870;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 3px;
+      margin-bottom: 14px;
+    }
+    .splash-badge::before {
+      content: '';
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      background: #3bb870;
+      border-radius: 50%;
+    }
+
+    .splash-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 34px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+    .splash-title span { color: #3bb870; }
+
+    .splash-sub {
+      color: #7a9bbf;
+      font-size: 14.5px;
+      line-height: 1.55;
+      max-width: 560px;
+    }
+
+    /* Body block */
+    .splash-body { padding: 32px 40px 36px; }
+
+    .splash-intro {
+      font-size: 14.5px;
+      color: #2c3e55;
+      line-height: 1.65;
+      margin-bottom: 28px;
+    }
+    .splash-intro strong { color: #0e1f3d; }
+
+    /* URL change card */
+    .url-card {
+      background: #f4f7fc;
+      border: 1px solid #dce5f0;
+      border-radius: 6px;
+      padding: 18px 22px;
+      margin-bottom: 28px;
+    }
+
+    .url-card-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      color: #7a90aa;
+      margin-bottom: 12px;
+    }
+
+    .url-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .url-col { flex: 1; min-width: 160px; }
+
+    .url-col-lbl {
+      font-size: 10px;
+      font-weight: 600;
+      color: #9aaabb;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 5px;
+    }
+
+    .url-old-val {
+      font-family: 'Courier New', monospace;
+      font-size: 12.5px;
+      color: #9aaabb;
+      background: #ebebeb;
+      padding: 7px 10px;
+      border-radius: 3px;
+      text-decoration: line-through;
+    }
+
+    .url-new-val {
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: #1a5c37;
+      background: #e4f5ec;
+      border: 1px solid #b0dfc3;
+      padding: 7px 10px;
+      border-radius: 3px;
+    }
+
+    .url-arrow {
+      font-size: 20px;
+      color: #3bb870;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 14px;
+    }
+
+    /* Checklist */
+    .checklist { list-style: none; margin: 0 0 28px; }
+
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: #3a4f66;
+      line-height: 1.55;
+      margin-bottom: 10px;
+    }
+
+    .check-dot {
+      width: 19px;
+      height: 19px;
+      background: #3bb870;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+      font-size: 10px;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    /* CTA row */
+    .splash-cta-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .btn-primary {
+      background: #3bb870;
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background .2s;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: #2ea360; }
+
+    .btn-ghost {
+      background: transparent;
+      color: #5a7a99;
+      font-size: 13.5px;
+      font-weight: 500;
+      border: 1.5px solid #c0cfdf;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: border-color .2s, color .2s;
+      white-space: nowrap;
+    }
+    .btn-ghost:hover { border-color: #3bb870; color: #1a5c37; }
+
+    .cta-note {
+      font-size: 12px;
+      color: #9aaabb;
+      line-height: 1.5;
+    }
+    .cta-note a { color: #3a6fa8; text-decoration: none; }
+    .cta-note a:hover { text-decoration: underline; }
+
+    /* ─────────────────────────────────────────────
+       CASES PANEL  (shown after dismiss)
+    ───────────────────────────────────────────── */
+    .cases-panel { display: none; }
+
+    /* Toast banner */
+    .welcome-toast {
+      background: #e4f5ec;
+      border: 1px solid #b0dfc3;
+      border-radius: 5px;
+      padding: 11px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13.5px;
+      color: #1a5c37;
+    }
+    .toast-icon {
+      width: 8px;
+      height: 8px;
+      background: #3bb870;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Cases header */
+    .cases-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .cases-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a2a40;
+    }
+    .btn-new-case {
+      background: #3bb870;
+      color: #fff;
+      font-size: 13.5px;
+      font-weight: 600;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-new-case:hover { background: #2ea360; }
+
+    /* Filter row */
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: 8px 18px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1.5px solid #c8d5e3;
+      background: transparent;
+      color: #4a6280;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .tab-btn.active {
+      background: #3bb870;
+      color: #fff;
+      border-color: #3bb870;
+    }
+    .tab-btn:hover:not(.active) { border-color: #a0b4c8; }
+
+    .search-box {
+      flex: 1;
+      min-width: 200px;
+      border: 1.5px solid #d0dae8;
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-family: 'Barlow', sans-serif;
+      font-size: 13px;
+      color: #2c3e55;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .search-box:focus { border-color: #4a7fc1; }
+
+    .filter-select {
+      border: 1.5px solid #d0dae8;
+      border-radius: 4px;
+      padding: 8px 10px;
+      font-family: 'Barlow', sans-serif;
+      font-size: 13px;
+      color: #4a6280;
+      background: #fff;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Cases table */
+    .cases-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 7px;
+      overflow: hidden;
+      border: 1px solid #dde4ef;
+    }
+    .cases-table th {
+      background: #f4f6fa;
+      padding: 10px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      color: #7a90aa;
+      text-align: left;
+      border-bottom: 1px solid #dde4ef;
+    }
+    .cases-table td {
+      padding: 14px 14px;
+      font-size: 13.5px;
+      color: #2c3e55;
+      border-bottom: 1px solid #eef1f7;
+      vertical-align: middle;
+    }
+    .cases-table tr:last-child td { border-bottom: none; }
+    .cases-table tbody tr:hover td { background: #f8fbff; cursor: pointer; }
+
+    .ticket-num {
+      color: #3a6fa8;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .acct-name {
+      font-size: 12px;
+      color: #7a90aa;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-normal    { background: #edf2fa; color: #4a6280; }
+    .badge-progress  { background: #e3eef9; color: #2a6aaa; }
+    .badge-resolved  { background: #e4f5ec; color: #1a6638; }
+    .badge-open      { background: #fff5e3; color: #8a5a00; }
+    .badge-closed    { background: #f0f0f0; color: #5a6a78; }
+
+    /* ─────────────────────────────────────────────
+       ANIMATIONS
+    ───────────────────────────────────────────── */
+    .fade-in {
+      animation: fadeIn .35s ease forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─────────────────────────────────────────────
+       RESPONSIVE
+    ───────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .pf-content       { padding: 20px 16px 40px; }
+      .splash-top       { padding: 24px 20px 22px; }
+      .splash-body      { padding: 22px 20px 26px; }
+      .splash-title     { font-size: 26px; }
+      .pf-header-right  { display: none; }
+      .url-row          { flex-direction: column; gap: 10px; }
+      .url-arrow        { transform: rotate(90deg); margin: 0 auto; }
+      .splash-cta-row   { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════
+       HEADER
+  ═══════════════════════════════════════════ -->
+  <header class="pf-header">
+    <div class="pf-logo-row">
+      <img src="./packetfusionlogo_white.png" alt="Packet Fusion" style="height:60px;display:block;" />
+      <div>
+        <div class="pf-logo-text">PACKET<b>FUSION</b></div>
+        <div class="pf-powered">Powered by Bridgepointe Technologies</div>
+      </div>
+    </div>
+    <div class="pf-header-right">
+      <!--
+        DEV NOTE: Replace the values below dynamically from your session/auth context.
+        e.g. {{ current_user.email }} and conditionally render the Staff badge.
+      -->
+      <span>Welcome, <b id="userEmail">user@company.com</b></span>
+      <span class="pf-staff-badge" id="staffBadge">Staff</span>
+      <a href="/logout" class="pf-signout">Sign out</a>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════
+       NAV BAR
+  ═══════════════════════════════════════════ -->
+  <nav class="pf-nav" role="navigation">
+    <a href="/support/cases" class="pf-nav-item active">Support Cases</a>
+    <a href="/support/kb"    class="pf-nav-item">Knowledge Base</a>
+  </nav>
+
+  <!-- ══════════════════════════════════════════
+       PAGE CONTENT
+  ═══════════════════════════════════════════ -->
+  <main class="pf-content">
+
+    <!-- ──────────────────────────────────────
+         SPLASH PANEL
+         Show this on first login after migration.
+         Recommend setting a cookie/session flag
+         (e.g. "migration_notice_dismissed = true")
+         so it only appears once per user.
+    ────────────────────────────────────────── -->
+    <div class="splash-panel" id="splashPanel" role="dialog" aria-labelledby="splashTitle" aria-modal="false">
+
+      <div class="splash-top">
+        <div class="splash-badge">Portal Update</div>
+        <h1 class="splash-title" id="splashTitle">
+          Welcome to Your<br><span>New Support Portal</span>
+        </h1>
+        <p class="splash-sub">
+          We've moved to a new home — your cases, history, and login are all right here waiting for you.
+        </p>
+      </div>
+
+      <div class="splash-body">
+
+        <p class="splash-intro">
+          As part of our continued investment in your support experience, the Packet Fusion customer
+          portal has migrated from our previous platform to
+          <strong>support.packetfusion.com</strong> — our own domain.
+          Nothing about your account or cases has changed.
+        </p>
+
+        <!-- URL Change Card -->
+        <div class="url-card" role="region" aria-label="Portal address change">
+          <div class="url-card-label">Portal Address Change</div>
+          <div class="url-row">
+            <div class="url-col">
+              <div class="url-col-lbl">Previous Address</div>
+              <div class="url-old-val">packetfusion.peakportals.com</div>
+            </div>
+            <div class="url-arrow" aria-hidden="true">→</div>
+            <div class="url-col">
+              <div class="url-col-lbl">New Address</div>
+              <div class="url-new-val">support.packetfusion.com</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- What stays the same checklist -->
+        <ul class="checklist" aria-label="What stays the same">
+          <li>
+            <div class="check-dot" aria-hidden="true">✓</div>
+            <span>Your <strong>login credentials</strong> are unchanged — same username and password</span>
+          </li>
+          <li>
+            <div class="check-dot" aria-hidden="true">✓</div>
+            <span>All <strong>open and historical cases</strong> are intact — nothing has been lost or reset</span>
+          </li>
+          <li>
+            <div class="check-dot" aria-hidden="true">✓</div>
+            <span>The <strong>portal experience</strong> is the same — same interface, same case detail views</span>
+          </li>
+          <li>
+            <div class="check-dot" aria-hidden="true">✓</div>
+            <span>Update your <strong>bookmark</strong> to support.packetfusion.com for direct access going forward</span>
+          </li>
+        </ul>
+
+        <!-- CTA -->
+        <div class="splash-cta-row">
+          <button class="btn-primary" onclick="dismissSplash()" id="continueBtn">
+            Continue to My Cases
+          </button>
+          <button class="btn-ghost" onclick="dismissSplash()">
+            Dismiss
+          </button>
+          <span class="cta-note">
+            Questions? <a href="mailto:support@packetfusion.com">support@packetfusion.com</a>
+            &nbsp;|&nbsp; <a href="tel:9257012020">925-701-2020</a>
+          </span>
+        </div>
+
+      </div>
+    </div><!-- /splash-panel -->
+
+
+    <!-- ──────────────────────────────────────
+         CASES PANEL
+         This is the normal portal view revealed
+         after the splash is dismissed.
+         Replace the static table rows below with
+         your dynamic data rendering.
+    ────────────────────────────────────────── -->
+    <div class="cases-panel" id="casesPanel">
+
+      <!-- Persistent migration reminder toast -->
+      <!--
+        DEV NOTE: Show this toast for ~30 days post-migration, then remove it.
+        You can control this server-side by date comparison or a feature flag.
+      -->
+      <div class="welcome-toast fade-in" id="migrationToast" role="status">
+        <div class="toast-icon" aria-hidden="true"></div>
+        <span>
+          You're now on <strong>support.packetfusion.com</strong> — please update your bookmark.
+          Your cases and history are all here.
+        </span>
+      </div>
+
+      <!-- Cases Header -->
+      <div class="cases-header-row fade-in">
+        <h2 class="cases-title">Support Cases</h2>
+        <button class="btn-new-case" onclick="window.location.href='/support/cases/new'">
+          + New Case
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-row fade-in">
+        <button class="tab-btn active" onclick="switchTab(this,'my')">My Cases</button>
+        <button class="tab-btn"        onclick="switchTab(this,'all')">All Cases</button>
+        <input
+          class="search-box"
+          type="text"
+          placeholder="Search by title, ticket #, or description..."
+          aria-label="Search cases"
+          id="caseSearch"
+        />
+        <select class="filter-select" aria-label="Filter by status" id="statusFilter">
+          <option value="">All Statuses</option>
+          <option value="in-progress">In Progress</option>
+          <option value="resolved">Resolved</option>
+          <option value="open">Open</option>
+          <option value="closed">Closed</option>
+        </select>
+        <select class="filter-select" aria-label="Filter by priority" id="priorityFilter">
+          <option value="">All Priorities</option>
+          <option value="normal">Normal</option>
+          <option value="high">High</option>
+          <option value="critical">Critical</option>
+        </select>
+      </div>
+
+      <!-- Cases Table -->
+      <!--
+        DEV NOTE: Replace the <tbody> rows below with your dynamic data source.
+        Column order: Ticket # | Title | Account | Priority | Status | Owner | Opened
+      -->
+      <table class="cases-table fade-in" id="casesTable">
+        <thead>
+          <tr>
+            <th>Ticket #</th>
+            <th>Title</th>
+            <th>Account</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Owner</th>
+            <th>Opened</th>
+          </tr>
+        </thead>
+        <tbody id="casesTableBody">
+          <!-- SAMPLE ROW — In Progress -->
+          <tr onclick="window.location.href='/support/cases/CAS-196126-S2P0P0'">
+            <td><span class="ticket-num">CAS-196126-S2P0P0</span></td>
+            <td>Zoom Test w/Template</td>
+            <td><span class="acct-name">PACKETFUSION, INC. (INTERNAL)</span></td>
+            <td><span class="badge badge-normal">Normal</span></td>
+            <td><span class="badge badge-progress">In Progress</span></td>
+            <td>Kevin Sabonis</td>
+            <td><span class="acct-name">Mar 12, 2026, 07:34 AM</span></td>
+          </tr>
+          <!-- SAMPLE ROW — Resolved -->
+          <tr onclick="window.location.href='/support/cases/CAS-189261-Z4L5N5'">
+            <td><span class="ticket-num">CAS-189261-Z4L5N5</span></td>
+            <td>Live Azure Time Entry Test</td>
+            <td><span class="acct-name">PACKETFUSION, INC. (INTERNAL)</span></td>
+            <td><span class="badge badge-normal">Normal</span></td>
+            <td><span class="badge badge-resolved">Resolved</span></td>
+            <td>Kevin Sabonis</td>
+            <td><span class="acct-name">Nov 21, 2024, 11:16 AM</span></td>
+          </tr>
+          <!-- SAMPLE ROW — Resolved -->
+          <tr onclick="window.location.href='/support/cases/CAS-182722-N8L2S9'">
+            <td><span class="ticket-num">CAS-182722-N8L2S9</span></td>
+            <td>Drag and Drop Test</td>
+            <td><span class="acct-name">PACKETFUSION, INC. (INTERNAL)</span></td>
+            <td><span class="badge badge-normal">Normal</span></td>
+            <td><span class="badge badge-resolved">Resolved</span></td>
+            <td>Kevin Sabonis</td>
+            <td><span class="acct-name">Apr 4, 2024, 04:23 PM</span></td>
+          </tr>
+          <!-- ADD MORE ROWS HERE OR RENDER DYNAMICALLY -->
+        </tbody>
+      </table>
+
+    </div><!-- /cases-panel -->
+
+  </main><!-- /pf-content -->
+
+
+  <!-- ══════════════════════════════════════════
+       JAVASCRIPT
+  ═══════════════════════════════════════════ -->
+  <script>
+    /*
+     * ─────────────────────────────────────────
+     *  SPLASH DISMISS
+     *
+     *  DEV NOTE: On dismiss, set a cookie or
+     *  call your API to record that this user
+     *  has seen the migration notice so it
+     *  doesn't show again on next login.
+     *
+     *  Example cookie approach:
+     *    document.cookie = "migration_notice_dismissed=true; max-age=7776000; path=/";
+     *    (7776000 seconds = 90 days)
+     *
+     *  Example API approach:
+     *    fetch('/api/user/preferences', {
+     *      method: 'PATCH',
+     *      body: JSON.stringify({ migration_notice_dismissed: true })
+     *    });
+     * ─────────────────────────────────────────
+     */
+    function dismissSplash() {
+      var splash = document.getElementById('splashPanel');
+      var cases  = document.getElementById('casesPanel');
+
+      splash.style.transition = 'opacity .25s ease';
+      splash.style.opacity = '0';
+
+      setTimeout(function() {
+        splash.style.display = 'none';
+        cases.style.display  = 'block';
+
+        // ── SET YOUR DISMISS COOKIE / API CALL HERE ──
+        document.cookie = "migration_notice_dismissed=true; max-age=7776000; path=/; SameSite=Lax";
+      }, 250);
+    }
+
+    /*
+     * ─────────────────────────────────────────
+     *  CHECK DISMISS COOKIE ON LOAD
+     *
+     *  DEV NOTE: If the user has already dismissed,
+     *  skip the splash and go straight to cases.
+     *  Remove or replace this logic if you handle
+     *  the show/hide server-side (recommended).
+     * ─────────────────────────────────────────
+     */
+    (function checkDismissed() {
+      var cookies = document.cookie.split(';');
+      for (var i = 0; i < cookies.length; i++) {
+        if (cookies[i].trim().startsWith('migration_notice_dismissed=true')) {
+          document.getElementById('splashPanel').style.display = 'none';
+          document.getElementById('casesPanel').style.display  = 'block';
+          return;
+        }
+      }
+    })();
+
+    /*
+     * ─────────────────────────────────────────
+     *  TAB SWITCHING (My Cases / All Cases)
+     *
+     *  DEV NOTE: Replace the filter logic below
+     *  with your actual data fetch if case lists
+     *  differ between "My Cases" and "All Cases".
+     * ─────────────────────────────────────────
+     */
+    function switchTab(btn, mode) {
+      document.querySelectorAll('.tab-btn').forEach(function(b) {
+        b.classList.remove('active');
+      });
+      btn.classList.add('active');
+      // Add your My Cases vs All Cases filter logic here
+      console.log('Tab switched to:', mode);
+    }
+
+    /*
+     * ─────────────────────────────────────────
+     *  DYNAMIC USER INFO
+     *
+     *  DEV NOTE: Populate the header with real
+     *  session data. Replace these placeholders.
+     * ─────────────────────────────────────────
+     */
+    // Example — replace with your session/template rendering:
+    // document.getElementById('userEmail').textContent = currentUser.email;
+    // if (!currentUser.isStaff) {
+    //   document.getElementById('staffBadge').style.display = 'none';
+    // }
+  </script>
+
+</body>
+</html>
