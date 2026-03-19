@@ -6,7 +6,7 @@ interface Props {
 	user: PortalUser | null;
 }
 
-const STATUS_OPTIONS = ["All Statuses", "In Progress", "On Hold", "Resolved", "Cancelled"];
+const STATUS_OPTIONS = ["Active", "All Statuses", "In Progress", "On Hold", "Resolved", "Cancelled"];
 const PRIORITY_OPTIONS = ["All Priorities", "High", "Normal", "Low"];
 const PAGE_SIZE = 50;
 
@@ -16,7 +16,7 @@ export default function CasesPage({ user }: Props) {
 	const [searching, setSearching] = useState(false);
 	const [error, setError] = useState("");
 	const [search, setSearch] = useState("");
-	const [statusFilter, setStatusFilter] = useState("All Statuses");
+	const [statusFilter, setStatusFilter] = useState("Active");
 	const [priorityFilter, setPriorityFilter] = useState("All Priorities");
 	const [mineOnly, setMineOnly] = useState(true);
 	const [page, setPage] = useState(0);
@@ -43,7 +43,8 @@ export default function CasesPage({ user }: Props) {
 	};
 
 	const filtered = cases.filter((c) => {
-		const matchStatus = statusFilter === "All Statuses" || c.status === statusFilter;
+		const matchStatus = statusFilter === "All Statuses" ||
+			(statusFilter === "Active" ? (c.status === "In Progress" || c.status === "On Hold") : c.status === statusFilter);
 		const matchPriority = priorityFilter === "All Priorities" || c.priority === priorityFilter;
 		return matchStatus && matchPriority;
 	});
@@ -93,12 +94,12 @@ export default function CasesPage({ user }: Props) {
 				<select value={priorityFilter} onChange={(e) => resetPage(() => setPriorityFilter(e.target.value))} className="filter-select">
 					{PRIORITY_OPTIONS.map((o) => <option key={o}>{o}</option>)}
 				</select>
-				{(search || statusFilter !== "All Statuses" || priorityFilter !== "All Priorities") && (
+				{(search || statusFilter !== "Active" || priorityFilter !== "All Priorities") && (
 					<button
 						className="btn btn-secondary btn-sm"
 						onClick={() => {
 							if (debounceRef.current) clearTimeout(debounceRef.current);
-							setSearch(""); setStatusFilter("All Statuses"); setPriorityFilter("All Priorities"); setPage(0);
+							setSearch(""); setStatusFilter("Active"); setPriorityFilter("All Priorities"); setPage(0);
 							fetchCases(undefined, mineOnly);
 						}}
 					>
