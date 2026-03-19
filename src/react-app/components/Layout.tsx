@@ -37,7 +37,10 @@ function ProfileChip({ user }: { user: PortalUser }) {
 				aria-haspopup="true"
 			>
 				<span className="profile-avatar">{getInitials(user.name)}</span>
-				<span className="profile-name">{user.name}</span>
+				<span className="profile-chip-text">
+					<span className="profile-name">{user.name}</span>
+					{user.accountName && <span className="profile-company">{user.accountName}</span>}
+				</span>
 				{user.isInternal && <span className="badge badge-active">Staff</span>}
 				<svg className="profile-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
 					<path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -50,6 +53,7 @@ function ProfileChip({ user }: { user: PortalUser }) {
 						<div className="profile-popout-avatar">{getInitials(user.name)}</div>
 						<div className="profile-popout-info">
 							<div className="profile-popout-name">{user.name}</div>
+							{user.accountName && <div className="profile-popout-company">{user.accountName}</div>}
 							<div className="profile-popout-email">{user.email}</div>
 						</div>
 					</div>

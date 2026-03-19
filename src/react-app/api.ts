@@ -3,6 +3,7 @@ export interface PortalUser {
 	contactId: string;
 	name: string;
 	isInternal: boolean;
+	accountName: string | null;
 }
 
 export interface Case {
