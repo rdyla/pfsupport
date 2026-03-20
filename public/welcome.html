@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Support Portal Update | Packet Fusion</title>
+  <link rel="icon" type="image/svg+xml" href="/cloud.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ─────────────────────────────────────────
+       RESET & BASE
+    ───────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:       #0e1f3d;
+      --navy-mid:   #152b4a;
+      --navy-lt:    #1e3a5f;
+      --green:      #3bb870;
+      --green-dk:   #2a9a58;
+      --green-lt:   #e4f5ec;
+      --green-bd:   #b0dfc3;
+      --slate:      #f0f3f7;
+      --slate-mid:  #dde6f0;
+      --body-text:  #2c3e55;
+      --muted:      #7a90aa;
+      --white:      #ffffff;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Barlow', sans-serif;
+      background: var(--slate);
+      color: var(--body-text);
+      font-size: 15px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--green-dk); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ─────────────────────────────────────────
+       HEADER / NAV
+    ───────────────────────────────────────── */
+    .site-header {
+      background: var(--navy);
+      padding: 12px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo-row { display: flex; align-items: center; gap: 10px; }
+
+    .logo-img { height: 36px; width: auto; display: block; }
+
+    .header-nav { display: flex; align-items: center; gap: 28px; }
+    .header-nav a {
+      color: #8aa4bf;
+      font-size: 13.5px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: color .2s;
+    }
+    .header-nav a:hover { color: var(--white); }
+
+    .header-cta {
+      background: var(--green);
+      color: var(--white) !important;
+      font-weight: 600 !important;
+      padding: 8px 18px;
+      border-radius: 4px;
+      transition: background .2s !important;
+    }
+    .header-cta:hover { background: var(--green-dk) !important; text-decoration: none !important; }
+
+    /* ─────────────────────────────────────────
+       HERO
+    ───────────────────────────────────────── */
+    .hero {
+      background: var(--navy);
+      border-left: 6px solid var(--green);
+      padding: 64px 40px 56px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      border: 60px solid rgba(59,184,112,.06);
+      pointer-events: none;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -120px; right: 80px;
+      width: 280px; height: 280px;
+      border-radius: 50%;
+      border: 40px solid rgba(59,184,112,.04);
+      pointer-events: none;
+    }
+
+    .hero-inner { max-width: 760px; position: relative; z-index: 1; }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(59,184,112,.15);
+      border: 1px solid rgba(59,184,112,.35);
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 3px;
+      margin-bottom: 20px;
+    }
+    .hero-badge::before {
+      content: '';
+      width: 7px; height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+    }
+
+    .hero h1 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 46px;
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.1;
+      margin-bottom: 18px;
+    }
+    .hero h1 span { color: var(--green); }
+
+    .hero-lead {
+      font-size: 17px;
+      color: #7a9bbf;
+      line-height: 1.6;
+      max-width: 620px;
+      margin-bottom: 32px;
+    }
+
+    .hero-url-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 6px;
+      padding: 14px 22px;
+      flex-wrap: wrap;
+    }
+    .url-pill-old {
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      color: #6a83a0;
+      text-decoration: line-through;
+    }
+    .url-pill-arrow { color: var(--green); font-size: 18px; font-weight: 700; }
+    .url-pill-new {
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    /* ─────────────────────────────────────────
+       MAIN CONTENT WRAPPER
+    ───────────────────────────────────────── */
+    .page-body {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 56px 32px 80px;
+    }
+
+    /* ─────────────────────────────────────────
+       SECTION HEADINGS
+    ───────────────────────────────────────── */
+    .section-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--green-dk);
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 12px;
+    }
+
+    .section-intro {
+      font-size: 15px;
+      color: #4a6280;
+      line-height: 1.65;
+      margin-bottom: 32px;
+      max-width: 680px;
+    }
+
+    .section-divider {
+      border: none;
+      border-top: 1px solid var(--slate-mid);
+      margin: 56px 0;
+    }
+
+    /* ─────────────────────────────────────────
+       REASSURANCE CARDS  (3-up grid)
+    ───────────────────────────────────────── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .reassure-card {
+      background: var(--white);
+      border: 1px solid var(--slate-mid);
+      border-radius: 8px;
+      padding: 24px 22px;
+      border-top: 3px solid var(--green);
+      transition: box-shadow .2s;
+    }
+    .reassure-card:hover { box-shadow: 0 4px 18px rgba(14,31,61,.08); }
+
+    .card-icon {
+      width: 38px; height: 38px;
+      background: var(--green-lt);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+
+    .card-body {
+      font-size: 13.5px;
+      color: #4a6280;
+      line-height: 1.55;
+    }
+
+    /* ─────────────────────────────────────────
+       WHAT YOU NEED TO DO  (action box)
+    ───────────────────────────────────────── */
+    .action-box {
+      background: var(--navy);
+      border-radius: 8px;
+      padding: 32px 36px;
+      margin-bottom: 48px;
+      border-left: 5px solid var(--green);
+      display: flex;
+      align-items: flex-start;
+      gap: 28px;
+      flex-wrap: wrap;
+    }
+
+    .action-box-icon {
+      width: 52px; height: 52px;
+      background: rgba(59,184,112,.18);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .action-box-content { flex: 1; min-width: 220px; }
+
+    .action-box-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 6px;
+    }
+
+    .action-box-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+
+    .action-box-body {
+      font-size: 14px;
+      color: #7a9bbf;
+      line-height: 1.6;
+    }
+    .action-box-body strong { color: var(--white); }
+
+    /* ─────────────────────────────────────────
+       TIMELINE  (what to expect when)
+    ───────────────────────────────────────── */
+    .timeline { position: relative; margin-bottom: 48px; }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 19px; top: 0; bottom: 0;
+      width: 2px;
+      background: var(--slate-mid);
+    }
+
+    .tl-item {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 28px;
+      position: relative;
+    }
+
+    .tl-dot {
+      width: 40px; height: 40px;
+      background: var(--white);
+      border: 2px solid var(--green);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--green);
+      position: relative;
+      z-index: 1;
+    }
+
+    .tl-dot.done {
+      background: var(--green);
+      border-color: var(--green);
+      color: var(--white);
+    }
+
+    .tl-content {
+      background: var(--white);
+      border: 1px solid var(--slate-mid);
+      border-radius: 8px;
+      padding: 18px 22px;
+      flex: 1;
+      margin-top: 4px;
+    }
+
+    .tl-period {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--green-dk);
+      margin-bottom: 4px;
+    }
+
+    .tl-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 5px;
+    }
+
+    .tl-body {
+      font-size: 13.5px;
+      color: #4a6280;
+      line-height: 1.55;
+    }
+
+    /* ─────────────────────────────────────────
+       FAQ
+    ───────────────────────────────────────── */
+    .faq-list { margin-bottom: 48px; }
+
+    .faq-item {
+      background: var(--white);
+      border: 1px solid var(--slate-mid);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+
+    .faq-q {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 22px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--navy);
+      user-select: none;
+      gap: 12px;
+    }
+    .faq-q:hover { color: var(--green-dk); }
+
+    .faq-chevron {
+      width: 20px; height: 20px;
+      flex-shrink: 0;
+      color: var(--muted);
+      transition: transform .25s;
+    }
+    .faq-item.open .faq-chevron { transform: rotate(180deg); color: var(--green); }
+
+    .faq-a {
+      display: none;
+      padding: 0 22px 20px;
+      font-size: 14px;
+      color: #4a6280;
+      line-height: 1.65;
+      border-top: 1px solid var(--slate-mid);
+      padding-top: 16px;
+    }
+    .faq-item.open .faq-a { display: block; }
+
+    /* ─────────────────────────────────────────
+       CONTACT STRIP
+    ───────────────────────────────────────── */
+    .contact-strip {
+      background: var(--white);
+      border: 1px solid var(--slate-mid);
+      border-radius: 8px;
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .contact-strip-icon {
+      width: 48px; height: 48px;
+      background: var(--green-lt);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .contact-strip-body { flex: 1; min-width: 200px; }
+
+    .contact-strip-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+
+    .contact-strip-text {
+      font-size: 13.5px;
+      color: #4a6280;
+      line-height: 1.55;
+    }
+
+    .contact-strip-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+    .btn-green {
+      display: inline-block;
+      background: var(--green);
+      color: var(--white);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+      padding: 10px 22px;
+      border-radius: 4px;
+      text-decoration: none;
+      transition: background .2s;
+      white-space: nowrap;
+    }
+    .btn-green:hover { background: var(--green-dk); text-decoration: none; }
+
+    .btn-outline {
+      display: inline-block;
+      background: transparent;
+      color: var(--navy);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+      padding: 10px 22px;
+      border-radius: 4px;
+      border: 1.5px solid #c0cfdf;
+      text-decoration: none;
+      transition: border-color .2s, color .2s;
+      white-space: nowrap;
+    }
+    .btn-outline:hover { border-color: var(--green); color: var(--green-dk); text-decoration: none; }
+
+    /* ─────────────────────────────────────────
+       FOOTER
+    ───────────────────────────────────────── */
+    .site-footer {
+      background: var(--navy);
+      padding: 28px 40px;
+      text-align: center;
+      border-top: 3px solid var(--green);
+    }
+
+    .footer-links { margin-bottom: 12px; }
+    .footer-links a {
+      color: #5a7a99;
+      font-size: 12.5px;
+      text-decoration: none;
+      margin: 0 12px;
+    }
+    .footer-links a:hover { color: var(--green); }
+
+    .footer-copy {
+      font-size: 12px;
+      color: #3a5570;
+    }
+    .footer-copy span { color: var(--green); }
+
+    /* ─────────────────────────────────────────
+       SECURITY CALLOUT (inside FAQ answer)
+    ───────────────────────────────────────── */
+    .security-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: var(--green-lt);
+      border: 1px solid var(--green-bd);
+      border-radius: 6px;
+      padding: 14px 16px;
+      margin-top: 14px;
+    }
+    .security-note-icon {
+      width: 20px; height: 20px;
+      background: var(--green);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+      font-size: 11px;
+      color: var(--white);
+      font-weight: 700;
+    }
+    .security-note-body {
+      font-size: 13px;
+      color: #1a5c37;
+      line-height: 1.55;
+    }
+    .security-note-body strong { color: #0f3d25; }
+
+    /* ─────────────────────────────────────────
+       ANIMATIONS
+    ───────────────────────────────────────── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(16px);
+      animation: fadeUp .5s ease forwards;
+    }
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-up:nth-child(1) { animation-delay: .05s; }
+    .fade-up:nth-child(2) { animation-delay: .12s; }
+    .fade-up:nth-child(3) { animation-delay: .19s; }
+    .fade-up:nth-child(4) { animation-delay: .26s; }
+
+    /* ─────────────────────────────────────────
+       RESPONSIVE
+    ───────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .site-header { padding: 12px 20px; }
+      .header-nav  { display: none; }
+      .hero        { padding: 40px 20px 36px; }
+      .hero h1     { font-size: 32px; }
+      .page-body   { padding: 36px 20px 60px; }
+      .action-box  { padding: 24px 20px; }
+      .contact-strip { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ════════════════════════════════════════
+       HEADER
+  ════════════════════════════════════════ -->
+  <header class="site-header">
+    <div class="logo-row">
+      <img src="/packetfusionlogo_white.png" alt="Packet Fusion" class="logo-img" />
+    </div>
+    <nav class="header-nav" role="navigation" aria-label="Site navigation">
+      <a href="https://packetfusion.com">Home</a>
+      <a href="https://packetfusion.com/support">Support</a>
+      <a href="https://support.packetfusion.com/cases" class="header-cta">Go to Portal</a>
+    </nav>
+  </header>
+
+  <!-- ════════════════════════════════════════
+       HERO
+  ════════════════════════════════════════ -->
+  <section class="hero" aria-labelledby="heroTitle">
+    <div class="hero-inner">
+      <div class="hero-badge">Support Portal Update</div>
+      <h1 id="heroTitle">
+        We've Moved<br>to a <span>New Home</span>
+      </h1>
+      <p class="hero-lead">
+        Your Packet Fusion support portal has a new address. Your cases, your history,
+        and your login are all exactly where you left them — just at a new URL.
+      </p>
+      <div class="hero-url-pill" role="region" aria-label="URL change">
+        <span class="url-pill-old">packetfusion.peakportals.com</span>
+        <span class="url-pill-arrow" aria-hidden="true">→</span>
+        <span class="url-pill-new">support.packetfusion.com</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       MAIN CONTENT
+  ════════════════════════════════════════ -->
+  <main class="page-body">
+
+    <!-- ── NOTHING CHANGES FOR YOU ───────── -->
+    <div class="section-label">What This Means for You</div>
+    <h2 class="section-title">Everything You Know Is Still There</h2>
+    <p class="section-intro">
+      We know change can be disruptive — so we made sure this one isn't.
+      Here's what's stayed exactly the same:
+    </p>
+
+    <div class="cards-grid">
+      <div class="reassure-card fade-up">
+        <div class="card-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3bb870" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <div class="card-title">A More Secure Sign-In</div>
+        <div class="card-body">The new portal uses email verification — just enter your work email and use the one-time code you receive. No password to remember.</div>
+      </div>
+      <div class="reassure-card fade-up">
+        <div class="card-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3bb870" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+        <div class="card-title">All Your Cases &amp; History</div>
+        <div class="card-body">Every open ticket, resolved case, and past interaction is fully intact. Nothing has been lost or reset.</div>
+      </div>
+      <div class="reassure-card fade-up">
+        <div class="card-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3bb870" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+        <div class="card-title">An Updated Interface</div>
+        <div class="card-body">The new portal features a redesigned, more intuitive interface — easier to navigate and built to make managing your cases simpler.</div>
+      </div>
+      <div class="reassure-card fade-up">
+        <div class="card-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3bb870" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="17 1 21 5 17 9"/>
+            <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+            <polyline points="7 23 3 19 7 15"/>
+            <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+          </svg>
+        </div>
+        <div class="card-title">Your Old Bookmark Still Works</div>
+        <div class="card-body">If you've bookmarked the old address, it will automatically redirect you to the new one. No disruption.</div>
+      </div>
+    </div>
+
+    <!-- ── WHAT YOU NEED TO DO ─────────────── -->
+    <div class="action-box" role="region" aria-label="Action required">
+      <div class="action-box-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3bb870" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
+          <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+          <line x1="6" y1="1" x2="6" y2="4"/>
+          <line x1="10" y1="1" x2="10" y2="4"/>
+          <line x1="14" y1="1" x2="14" y2="4"/>
+        </svg>
+      </div>
+      <div class="action-box-content">
+        <div class="action-box-label">The Only Thing We'd Ask</div>
+        <div class="action-box-title">Update Your Bookmark</div>
+        <div class="action-box-body">
+          The old URL will continue to redirect you automatically for the foreseeable future —
+          so nothing will break. But whenever it's convenient, we'd love for you to update
+          your bookmark to <strong>support.packetfusion.com</strong> so you're always going
+          straight to the right place.
+        </div>
+      </div>
+    </div>
+
+    <hr class="section-divider"/>
+
+    <!-- ── WHAT TO EXPECT & WHEN ─────────── -->
+    <div class="section-label">The Transition</div>
+    <h2 class="section-title">What's Happening &amp; When</h2>
+    <p class="section-intro">
+      Here's a simple look at the timeline so you know exactly what to expect over the coming weeks.
+    </p>
+
+    <div class="timeline" role="list">
+      <div class="tl-item" role="listitem">
+        <div class="tl-dot done" aria-label="Completed">✓</div>
+        <div class="tl-content">
+          <div class="tl-period">Right Now — Complete</div>
+          <div class="tl-title">The New Portal Is Live</div>
+          <div class="tl-body">
+            support.packetfusion.com is fully operational. If you visit your old bookmark,
+            you'll be automatically redirected here without any action on your part.
+            This notification email was sent to let you know what changed.
+          </div>
+        </div>
+      </div>
+      <div class="tl-item" role="listitem">
+        <div class="tl-dot" aria-label="In progress">~</div>
+        <div class="tl-content">
+          <div class="tl-period">Next 30 Days</div>
+          <div class="tl-title">Seamless Redirect in Place</div>
+          <div class="tl-body">
+            The old portal address will keep redirecting you automatically. Our team
+            will be available if you have any trouble accessing your account. You may
+            also see a reminder banner on the old address pointing you to the new one.
+          </div>
+        </div>
+      </div>
+      <div class="tl-item" role="listitem">
+        <div class="tl-dot">4/30</div>
+        <div class="tl-content">
+          <div class="tl-period">April 30, 2026 — Hard Cutover</div>
+          <div class="tl-title">Old Address Retired</div>
+          <div class="tl-body">
+            On <strong>April 30, 2026</strong>, the old portal address will be retired and
+            will no longer redirect. We strongly recommend updating your bookmark to
+            <strong>support.packetfusion.com</strong> before that date to ensure uninterrupted access.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="section-divider"/>
+
+    <!-- ── FAQ ──────────────────────────── -->
+    <div class="section-label">Common Questions</div>
+    <h2 class="section-title">We've Got Answers</h2>
+    <p class="section-intro">
+      A few things customers typically ask when something like this happens.
+    </p>
+
+    <div class="faq-list" role="list">
+
+      <div class="faq-item" role="listitem">
+        <div class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
+          Do I need to do anything right now?
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a">
+          No — nothing is required. Your existing bookmark will redirect you automatically.
+          The only optional step is updating your bookmark to <strong>support.packetfusion.com</strong>
+          so you're always going to the new address directly.
+        </div>
+      </div>
+
+      <div class="faq-item" role="listitem">
+        <div class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
+          How do I log in? Has the sign-in process changed?
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a">
+          Yes — and it's actually simpler and more secure than before. The new portal uses
+          <strong>email verification</strong> instead of a traditional password. Here's how it works:
+          <br><br>
+          <strong>1.</strong> Go to <strong>support.packetfusion.com</strong> and enter your work email address.<br>
+          <strong>2.</strong> You'll receive a one-time code in your inbox — sent by <strong>Cloudflare</strong>, our secure access provider.<br>
+          <strong>3.</strong> Enter that code to sign in. That's it — no password needed.
+          <div class="security-note">
+            <div class="security-note-icon">&#9679;</div>
+            <div class="security-note-body">
+              <strong>A security upgrade, not a hurdle.</strong> By moving to one-time email codes,
+              your account is protected even if a password were ever compromised. There's nothing
+              to remember and nothing to reset — just check your inbox each time you log in.
+              The email will always come from Cloudflare on behalf of Packet Fusion.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" role="listitem">
+        <div class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
+          Are my old cases and ticket history still there?
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a">
+          Yes. Every case — open, in progress, or resolved — is fully intact on the new portal.
+          All attachments, notes, and correspondence are there. Nothing was migrated away or deleted.
+        </div>
+      </div>
+
+      <div class="faq-item" role="listitem">
+        <div class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
+          Why did Packet Fusion move to a new portal?
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a">
+          We moved the portal to our own domain — support.packetfusion.com — as part of a broader
+          investment in our support infrastructure. Hosting the portal ourselves gives us more
+          control over performance, security, and future improvements. The experience you see
+          today is the same, but this move sets us up to make it better over time.
+        </div>
+      </div>
+
+      <div class="faq-item" role="listitem">
+        <div class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
+          What if my old bookmark stops working one day?
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a">
+          The old portal address will be retired on <strong>April 30, 2026</strong>. After that
+          date it will no longer redirect. To ensure uninterrupted access, we recommend updating
+          your bookmark to <strong>support.packetfusion.com</strong> as soon as possible. You can
+          also always find the portal link at <a href="https://packetfusion.com/support">packetfusion.com/support</a>.
+        </div>
+      </div>
+
+      <div class="faq-item" role="listitem">
+        <div class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
+          I'm having trouble logging in — what should I do?
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a">
+          First, make sure you're going to <strong>support.packetfusion.com</strong> and entering
+          your <strong>work email address</strong>. Check your inbox (and spam folder) for a
+          one-time code from Cloudflare — it typically arrives within a minute. If you're
+          still having trouble, email us at <a href="mailto:info@packetfusion.com">info@packetfusion.com</a>
+          or call <a href="tel:9257012020">925-701-2020</a> and our team will get you sorted out quickly.
+        </div>
+      </div>
+
+    </div>
+
+    <hr class="section-divider"/>
+
+    <!-- ── CONTACT STRIP ─────────────────── -->
+    <div class="contact-strip" role="region" aria-label="Contact support">
+      <div class="contact-strip-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3bb870" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+      </div>
+      <div class="contact-strip-body">
+        <div class="contact-strip-title">Still Have Questions?</div>
+        <div class="contact-strip-text">
+          Our support team is available and happy to help with anything related to the portal migration
+          or your account. Reach us by email or phone — we'll take care of you.
+        </div>
+      </div>
+      <div class="contact-strip-actions">
+        <a href="mailto:info@packetfusion.com" class="btn-green">Email Support</a>
+        <a href="tel:9257012020" class="btn-outline">925-701-2020</a>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ════════════════════════════════════════
+       FOOTER
+  ════════════════════════════════════════ -->
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="https://support.packetfusion.com/cases">Support Portal</a>
+      <a href="https://packetfusion.com/support">Support Home</a>
+      <a href="https://packetfusion.com/contact">Contact Us</a>
+      <a href="https://packetfusion.com/privacy-policy">Privacy Policy</a>
+    </div>
+    <div class="footer-copy">
+      © 2026 <span>Packet Fusion</span> &nbsp;|&nbsp; 4637 Chabot Drive, Suite 350, Pleasanton, CA 94588
+      &nbsp;|&nbsp; <a href="mailto:info@packetfusion.com" style="color:#5a7a99;">info@packetfusion.com</a>
+    </div>
+  </footer>
+
+  <!-- ════════════════════════════════════════
+       JAVASCRIPT
+  ════════════════════════════════════════ -->
+  <script>
+    function toggleFaq(btn) {
+      var item = btn.parentElement;
+      var isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(function(el) {
+        el.classList.remove('open');
+        el.querySelector('.faq-q').setAttribute('aria-expanded', 'false');
+      });
+      if (!isOpen) {
+        item.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    }
+  </script>
+
+</body>
+</html>
