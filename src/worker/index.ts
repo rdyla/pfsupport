@@ -10,6 +10,14 @@ type Variables = { user: PortalUser };
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
+// SPA fallback — serve the React shell for any /portal/* route not matched by a static asset
+app.get("/portal", (c) =>
+	c.env.ASSETS.fetch(new Request(new URL("/portal/index.html", c.req.url)))
+);
+app.get("/portal/*", (c) =>
+	c.env.ASSETS.fetch(new Request(new URL("/portal/index.html", c.req.url)))
+);
+
 // Auth middleware for all portal routes
 app.use("/api/portal/*", authMiddleware);
 

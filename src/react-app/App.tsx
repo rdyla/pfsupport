@@ -31,7 +31,7 @@ export default function App() {
 	}
 
 	return (
-		<BrowserRouter>
+		<BrowserRouter basename="/portal">
 			<Layout user={user}>
 				<Routes>
 					<Route path="/" element={<SplashPage />} />
