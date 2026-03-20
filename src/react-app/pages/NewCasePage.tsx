@@ -36,7 +36,7 @@ export default function NewCasePage({ user }: Props) {
 		setSubmitting(true);
 		setError("");
 		try {
-			await api.createCase({
+			const result = await api.createCase({
 				title,
 				description,
 				prioritycode,
@@ -45,7 +45,9 @@ export default function NewCasePage({ user }: Props) {
 				...(notificationContactId ? { notificationContactId } : {}),
 				...(escalationEngineer ? { escalationEngineerId: escalationEngineer.id } : {}),
 			});
-			navigate("/cases");
+			navigate("/cases/confirmation", {
+				state: { id: result.id, ticketNumber: result.ticketNumber, title, prioritycode },
+			});
 		} catch (e: any) {
 			setError(e.message);
 			setSubmitting(false);

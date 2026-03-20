@@ -6,6 +6,7 @@ import Layout from "./components/Layout";
 import CasesPage from "./pages/CasesPage";
 import CaseDetailPage from "./pages/CaseDetailPage";
 import NewCasePage from "./pages/NewCasePage";
+import CaseConfirmationPage from "./pages/CaseConfirmationPage";
 import KBPage from "./pages/KBPage";
 import KBArticlePage from "./pages/KBArticlePage";
 import SplashPage from "./pages/SplashPage";
@@ -36,6 +37,7 @@ export default function App() {
 					<Route path="/" element={<SplashPage />} />
 					<Route path="/cases" element={<CasesPage user={user} />} />
 					<Route path="/cases/new" element={<NewCasePage user={user} />} />
+				<Route path="/cases/confirmation" element={<CaseConfirmationPage />} />
 					<Route path="/cases/:id" element={<CaseDetailPage user={user} />} />
 					<Route path="/kb" element={<KBPage user={user} />} />
 					<Route path="/kb/:id" element={<KBArticlePage user={user} />} />
