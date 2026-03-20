@@ -63,7 +63,7 @@ export default function SplashPage() {
 				<ul className="splash-checklist" aria-label="What stays the same">
 					<li>
 						<div className="check-dot" aria-hidden="true">✓</div>
-						<span>Your <strong>login credentials</strong> are unchanged — same username and password</span>
+						<span>To <strong>log in</strong>, enter your work email address — you'll receive a one-time code from <strong>Cloudflare</strong> (our access provider). Check your inbox for an email from Cloudflare and use the code to sign in.</span>
 					</li>
 					<li>
 						<div className="check-dot" aria-hidden="true">✓</div>
@@ -71,7 +71,7 @@ export default function SplashPage() {
 					</li>
 					<li>
 						<div className="check-dot" aria-hidden="true">✓</div>
-						<span>The <strong>portal experience</strong> is the same — same interface, same case detail views</span>
+						<span>Enjoy an <strong>updated, more intuitive interface</strong> — redesigned to make managing your cases easier</span>
 					</li>
 					<li>
 						<div className="check-dot" aria-hidden="true">✓</div>
