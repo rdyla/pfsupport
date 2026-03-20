@@ -133,6 +133,11 @@ async function lookupPortalUser(
 	};
 }
 
+function getCookieValue(cookieHeader: string, name: string): string | undefined {
+	const match = cookieHeader.split(";").map((c) => c.trim()).find((c) => c.startsWith(`${name}=`));
+	return match ? match.slice(name.length + 1) : undefined;
+}
+
 export async function authMiddleware(c: Context<{ Bindings: Env; Variables: { user: PortalUser } }>, next: Next) {
 	// Bypass auth in local dev if no team domain is set
 	if (!c.env.CF_TEAM_DOMAIN) {
@@ -140,7 +145,9 @@ export async function authMiddleware(c: Context<{ Bindings: Env; Variables: { us
 		return;
 	}
 
-	const token = c.req.header("Cf-Access-Jwt-Assertion");
+	const token =
+		c.req.header("Cf-Access-Jwt-Assertion") ??
+		getCookieValue(c.req.header("cookie") ?? "", "CF_Authorization");
 	if (!token) {
 		return c.json({ error: "Unauthorized" }, 401);
 	}
