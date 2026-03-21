@@ -192,4 +192,85 @@ router.get("/logout", async (c) => {
 	});
 });
 
+// GET /api/auth/sso — redirect to Microsoft login
+router.get("/sso", async (c) => {
+	const origin = new URL(c.req.url).origin;
+	const redirectUri = `${origin}/api/auth/sso/callback`;
+
+	const state = crypto.randomUUID();
+	await c.env.KV.put(`sso_state:${state}`, redirectUri, { expirationTtl: 300 });
+
+	const params = new URLSearchParams({
+		client_id: c.env.D365_CLIENT_ID,
+		response_type: "code",
+		redirect_uri: redirectUri,
+		scope: "openid email profile",
+		state,
+		prompt: "select_account",
+	});
+
+	return Response.redirect(
+		`https://login.microsoftonline.com/${c.env.D365_TENANT_ID}/oauth2/v2.0/authorize?${params}`,
+		302
+	);
+});
+
+// GET /api/auth/sso/callback — handle Microsoft OAuth2 callback
+router.get("/sso/callback", async (c) => {
+	const { code, state, error } = c.req.query() as Record<string, string>;
+
+	if (error) return new Response(`Sign-in error: ${error}`, { status: 400 });
+	if (!code || !state) return new Response("Invalid callback", { status: 400 });
+
+	// Verify state
+	const redirectUri = await c.env.KV.get(`sso_state:${state}`);
+	if (!redirectUri) return new Response("State mismatch or expired — please try again", { status: 400 });
+	await c.env.KV.delete(`sso_state:${state}`);
+
+	// Exchange code for tokens
+	const params = new URLSearchParams({
+		client_id: c.env.D365_CLIENT_ID,
+		client_secret: c.env.D365_CLIENT_SECRET,
+		code,
+		redirect_uri: redirectUri,
+		grant_type: "authorization_code",
+	});
+
+	const tokenRes = await fetch(
+		`https://login.microsoftonline.com/${c.env.D365_TENANT_ID}/oauth2/v2.0/token`,
+		{
+			method: "POST",
+			headers: { "Content-Type": "application/x-www-form-urlencoded" },
+			body: params.toString(),
+		}
+	);
+
+	if (!tokenRes.ok) return new Response("Token exchange failed", { status: 500 });
+
+	const tokens = await tokenRes.json() as { id_token: string };
+
+	// Decode email from ID token payload (no verification needed — came directly from Microsoft)
+	const payload = JSON.parse(atob(tokens.id_token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+	const email: string = payload.preferred_username || payload.email || payload.upn;
+	if (!email) return new Response("Could not determine email from Microsoft token", { status: 400 });
+
+	// Look up portal user
+	const user = await lookupPortalUser(email, c.env);
+	if (!user) {
+		return new Response("No portal access found for this Microsoft account.", { status: 403 });
+	}
+
+	// Create session
+	const sessionId = crypto.randomUUID();
+	await c.env.KV.put(sessionKey(sessionId), JSON.stringify(user), { expirationTtl: SESSION_TTL });
+
+	return new Response(null, {
+		status: 302,
+		headers: {
+			Location: "/portal/cases",
+			"Set-Cookie": sessionCookie(sessionId, SESSION_TTL),
+		},
+	});
+});
+
 export default router;
