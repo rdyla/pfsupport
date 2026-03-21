@@ -4,11 +4,20 @@ import casesRouter from "./routes/cases";
 import kbRouter from "./routes/kb";
 import accountsRouter from "./routes/accounts";
 import usersRouter from "./routes/users";
+import authRouter from "./routes/auth";
 import { d365Fetch } from "./d365";
 
 type Variables = { user: PortalUser };
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
+
+// Auth routes (public — no middleware)
+app.route("/api/auth", authRouter);
+
+// Login page (public)
+app.get("/login", (c) =>
+	c.env.ASSETS.fetch(new Request(new URL("/login.html", c.req.url)))
+);
 
 // SPA fallback — serve the React shell for any /portal/* route not matched by a static asset
 app.get("/portal", (c) =>

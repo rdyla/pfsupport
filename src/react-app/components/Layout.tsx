@@ -59,7 +59,7 @@ function ProfileChip({ user }: { user: PortalUser }) {
 					</div>
 					<div className="profile-popout-divider" />
 					<a
-						href="/cdn-cgi/access/logout"
+						href="/api/auth/logout"
 						className="profile-popout-signout"
 					>
 						<svg width="16" height="16" viewBox="0 0 16 16" fill="none">

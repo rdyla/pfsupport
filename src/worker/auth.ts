@@ -100,7 +100,7 @@ export async function verifyAccessJWT(
 	}
 }
 
-async function lookupPortalUser(
+export async function lookupPortalUser(
 	email: string,
 	env: Env
 ): Promise<PortalUser | null> {
@@ -139,29 +139,12 @@ function getCookieValue(cookieHeader: string, name: string): string | undefined 
 }
 
 export async function authMiddleware(c: Context<{ Bindings: Env; Variables: { user: PortalUser } }>, next: Next) {
-	// Bypass auth in local dev if no team domain is set
-	if (!c.env.CF_TEAM_DOMAIN) {
-		await next();
-		return;
-	}
+	const sessionId = getCookieValue(c.req.header("cookie") ?? "", "pf_session");
+	if (!sessionId) return c.json({ error: "Unauthorized" }, 401);
 
-	const token =
-		c.req.header("Cf-Access-Jwt-Assertion") ??
-		getCookieValue(c.req.header("cookie") ?? "", "CF_Authorization");
-	if (!token) {
-		return c.json({ error: "Unauthorized" }, 401);
-	}
+	const raw = await c.env.KV.get(`session:${sessionId}`);
+	if (!raw) return c.json({ error: "Unauthorized" }, 401);
 
-	const jwt = await verifyAccessJWT(token, c.env);
-	if (!jwt) {
-		return c.json({ error: "Invalid token" }, 401);
-	}
-
-	const user = await lookupPortalUser(jwt.email, c.env);
-	if (!user) {
-		return c.json({ error: "Access denied — no portal access for this account" }, 403);
-	}
-
-	c.set("user", user);
+	c.set("user", JSON.parse(raw) as PortalUser);
 	await next();
 }

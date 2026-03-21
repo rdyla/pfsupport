@@ -47,6 +47,10 @@ export interface CaseDetail extends Case {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
 	const res = await fetch(path, init);
+	if (res.status === 401) {
+		window.location.href = "/login";
+		throw new Error("Unauthorized");
+	}
 	if (!res.ok) {
 		const err = await res.json().catch(() => ({ error: res.statusText })) as { error: string };
 		throw new Error(err.error || res.statusText);
