@@ -22,6 +22,7 @@ export interface PortalUser {
 	name: string;
 	isInternal: boolean;
 	accountName: string | null;
+	accountId: string | null;
 }
 
 function base64UrlDecode(str: string): Uint8Array {
@@ -107,12 +108,12 @@ export async function lookupPortalUser(
 	const isInternal = email.toLowerCase().endsWith("@packetfusion.com");
 
 	if (isInternal) {
-		return { email, contactId: "", name: email, isInternal: true, accountName: "Packet Fusion" };
+		return { email, contactId: "", name: email, isInternal: true, accountName: "Packet Fusion", accountId: null };
 	}
 
 	const filter = `emailaddress1 eq '${email}' and vtx_portaluser eq true`;
 	const select = "contactid,fullname,emailaddress1";
-	const expand = "parentcustomerid_account($select=name)";
+	const expand = "parentcustomerid_account($select=accountid,name)";
 	const res = await d365Fetch(
 		env,
 		`/contacts?$filter=${encodeURIComponent(filter)}&$select=${select}&$expand=${encodeURIComponent(expand)}&$top=1`
@@ -120,7 +121,7 @@ export async function lookupPortalUser(
 
 	if (!res.ok) return null;
 
-	const data = await res.json() as { value: { contactid: string; fullname: string; parentcustomerid_account?: { name: string } }[] };
+	const data = await res.json() as { value: { contactid: string; fullname: string; parentcustomerid_account?: { accountid: string; name: string } }[] };
 	if (!data.value.length) return null;
 
 	const contact = data.value[0];
@@ -130,6 +131,7 @@ export async function lookupPortalUser(
 		name: contact.fullname,
 		isInternal: false,
 		accountName: contact.parentcustomerid_account?.name ?? null,
+		accountId: contact.parentcustomerid_account?.accountid ?? null,
 	};
 }
 
