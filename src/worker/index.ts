@@ -11,8 +11,16 @@ type Variables = { user: PortalUser };
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
+// TEMPORARY REDIRECT — uncomment to redirect traffic; remove when going live
+// app.get("*", (c) => c.redirect("https://packetfusion.peakportals.com", 302));
+
 // Auth routes (public — no middleware)
 app.route("/api/auth", authRouter);
+
+// Welcome page (public)
+app.get("/", (c) =>
+	c.env.ASSETS.fetch(new Request(new URL("/index.html", c.req.url)))
+);
 
 // Login page (public)
 app.get("/login", (c) =>
@@ -45,6 +53,24 @@ app.get("/api/portal/me/contacts", async (c) => {
 	if (!res.ok) return c.json([]);
 	const data = await res.json() as { value: any[] };
 	return c.json(data.value.map((ct: any) => ({ id: ct.contactid, name: ct.fullname, email: ct.emailaddress1 })));
+});
+
+// Customer's sold technology vendors (for vendor KB search)
+app.get("/api/portal/me/vendors", async (c) => {
+	const user = c.get("user");
+	if (!user.accountId) return c.json([]);
+
+	const res = await d365Fetch(c.env,
+		`/am_soldtechnologies?$filter=_am_account_value eq '${user.accountId}'&$select=_am_vendor_value&$top=50`,
+		{ headers: { Prefer: 'odata.include-annotations="OData.Community.Display.V1.FormattedValue"' } }
+	);
+	if (!res.ok) return c.json([]);
+
+	const data = await res.json() as { value: Record<string, string>[] };
+	const names = data.value
+		.map(v => v["_am_vendor_value@OData.Community.Display.V1.FormattedValue"])
+		.filter(Boolean);
+	return c.json([...new Set(names)]);
 });
 
 // Cases routes
