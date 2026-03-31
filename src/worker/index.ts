@@ -11,9 +11,6 @@ type Variables = { user: PortalUser };
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
-// TEMPORARY REDIRECT — remove when going live
-app.get("*", (c) => c.redirect("https://packetfusion.peakportals.com", 302));
-
 // Auth routes (public — no middleware)
 app.route("/api/auth", authRouter);
 
