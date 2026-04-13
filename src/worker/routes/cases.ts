@@ -124,27 +124,27 @@ cases.get("/:id", async (c) => {
 		escalationEngineerName: raw["_am_escalationengineer_value@OData.Community.Display.V1.FormattedValue"] ?? null,
 	};
 
-	// Fetch annotations — expand createdby to get the author name
-	const annotSelect = "annotationid,subject,notetext,filename,mimetype,isdocument,createdon,filesize";
-	const annotExpand = "createdby($select=fullname)";
+	// Fetch case notes (vtx_casenote entity) — expand ownerid to get the author name
+	const noteSelect = "vtx_casenoteId,subject,description,createdon";
+	const noteExpand = "ownerid($select=fullname)";
 	const annotRes = await d365Fetch(
 		c.env,
-		`/annotations?$filter=_objectid_value eq '${id}'&$select=${annotSelect}&$expand=${annotExpand}&$orderby=createdon asc`
+		`/vtx_casenotes?$filter=_regardingobjectid_value eq '${id}'&$select=${noteSelect}&$expand=${noteExpand}&$orderby=createdon asc`
 	);
 
 	let notes: any[] = [];
 	if (annotRes.ok) {
 		const annotData = await annotRes.json() as { value: any[] };
 		notes = annotData.value.map((n: any) => ({
-			id: n.annotationid,
+			id: n.vtx_casenoteId,
 			subject: n.subject,
-			text: n.notetext,
-			isAttachment: n.isdocument,
-			filename: n.filename,
-			mimetype: n.mimetype,
-			filesize: n.filesize,
+			text: n.description,
+			isAttachment: false,
+			filename: null,
+			mimetype: null,
+			filesize: null,
 			createdOn: n.createdon,
-			createdBy: n.createdby?.fullname ?? "Unknown",
+			createdBy: n.ownerid?.fullname ?? "Unknown",
 		}));
 	}
 
@@ -237,12 +237,12 @@ cases.post("/:id/notes", async (c) => {
 		return c.json({ error: "Note text is required" }, 400);
 	}
 
-	const res = await d365Fetch(c.env, "/annotations", {
+	const res = await d365Fetch(c.env, "/vtx_casenotes", {
 		method: "POST",
 		body: JSON.stringify({
 			subject: `Note from ${user.name}`,
-			notetext: body.text,
-			"objectid_incident@odata.bind": `/incidents(${id})`,
+			description: body.text,
+			"regardingobjectid_incident@odata.bind": `/incidents(${id})`,
 		}),
 	});
 
@@ -341,14 +341,14 @@ cases.post("/:id/status", async (c) => {
 		return c.json({ error }, res.status as any);
 	}
 
-	// Add a note recording the status change
+	// Add a case note recording the status change
 	if (body.comment) {
-		await d365Fetch(c.env, "/annotations", {
+		await d365Fetch(c.env, "/vtx_casenotes", {
 			method: "POST",
 			body: JSON.stringify({
 				subject: `Status updated by ${user.name}`,
-				notetext: body.comment,
-				"objectid_incident@odata.bind": `/incidents(${id})`,
+				description: body.comment,
+				"regardingobjectid_incident@odata.bind": `/incidents(${id})`,
 			}),
 		});
 	}
