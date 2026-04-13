@@ -6,6 +6,22 @@ type Variables = { user: PortalUser };
 
 const cases = new Hono<{ Bindings: Env; Variables: Variables }>();
 
+function stripHtml(html: string | null): string | null {
+	if (!html) return html;
+	return html
+		.replace(/<style[\s\S]*?<\/style>/gi, "")
+		.replace(/<script[\s\S]*?<\/script>/gi, "")
+		.replace(/<[^>]+>/g, "")
+		.replace(/&nbsp;/g, " ")
+		.replace(/&amp;/g, "&")
+		.replace(/&lt;/g, "<")
+		.replace(/&gt;/g, ">")
+		.replace(/&quot;/g, "\"")
+		.replace(/&#39;/g, "'")
+		.replace(/(\r?\n\s*){3,}/g, "\n\n")
+		.trim();
+}
+
 const PRIORITY_MAP: Record<number, string> = { 1: "High", 2: "Normal", 3: "Low" };
 const STATUS_MAP: Record<number, string> = {
 	1: "In Progress",
@@ -124,8 +140,8 @@ cases.get("/:id", async (c) => {
 		escalationEngineerName: raw["_am_escalationengineer_value@OData.Community.Display.V1.FormattedValue"] ?? null,
 	};
 
-	// Fetch case notes and attachments in parallel
-	const [caseNoteRes, attachmentRes] = await Promise.all([
+	// Fetch case notes, attachments, and emails in parallel
+	const [caseNoteRes, attachmentRes, emailRes] = await Promise.all([
 		d365Fetch(
 			c.env,
 			`/vtx_casenotes?$filter=_regardingobjectid_value eq '${id}'&$select=subject,description,createdon&$expand=createdby($select=fullname)&$orderby=createdon asc`
@@ -133,6 +149,10 @@ cases.get("/:id", async (c) => {
 		d365Fetch(
 			c.env,
 			`/annotations?$filter=_objectid_value eq '${id}' and isdocument eq true&$select=annotationid,subject,filename,mimetype,filesize,createdon&$expand=createdby($select=fullname)&$orderby=createdon asc`
+		),
+		d365Fetch(
+			c.env,
+			`/emails?$filter=_regardingobjectid_value eq '${id}'&$select=activityid,subject,description,createdon,sender,directioncode&$orderby=createdon asc`
 		),
 	]);
 
@@ -168,6 +188,24 @@ cases.get("/:id", async (c) => {
 				filesize: n.filesize,
 				createdOn: n.createdon,
 				createdBy: n.createdby?.fullname ?? "Unknown",
+			});
+		}
+	}
+
+	if (emailRes.ok) {
+		const data = await emailRes.json() as { value: any[] };
+		for (const n of data.value) {
+			if (n.sender?.toLowerCase() === "tac-update@packetfusion.com") continue;
+			notes.push({
+				id: n.activityid,
+				subject: n.subject,
+				text: stripHtml(n.description),
+				isAttachment: false,
+				filename: null,
+				mimetype: null,
+				filesize: null,
+				createdOn: n.createdon,
+				createdBy: n.sender ?? "Unknown",
 			});
 		}
 	}
