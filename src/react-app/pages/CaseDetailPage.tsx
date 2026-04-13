@@ -21,6 +21,14 @@ export default function CaseDetailPage({ user }: Props) {
 	const [statusError, setStatusError] = useState("");
 	const [statusSubmitting, setStatusSubmitting] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
+	const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
+	const NOTE_COLLAPSE_THRESHOLD = 300;
+	const toggleNote = (id: string) =>
+		setExpandedNotes((prev) => {
+			const next = new Set(prev);
+			next.has(id) ? next.delete(id) : next.add(id);
+			return next;
+		});
 
 	// Contact editor state
 	const [showContactEditor, setShowContactEditor] = useState(false);
@@ -167,30 +175,45 @@ export default function CaseDetailPage({ user }: Props) {
 							<div className="empty">No notes yet.</div>
 						)}
 
-						{caseData.notes.map((note) => (
-							<div className="note" key={note.id}>
-								<span className="note-meta">
-									<strong>{note.createdBy}</strong> · {formatDate(note.createdOn)}
-								</span>
-								{note.subject && <p className="note-text" style={{ fontWeight: 600 }}>{note.subject}</p>}
-								{note.text && <p className="note-text">{note.text}</p>}
-								{note.isAttachment && note.filename && (
-									<a
-										className="note-attachment"
-										href={api.getAttachmentUrl(caseData.id, note.id)}
-										target="_blank"
-										rel="noreferrer"
-									>
-										📎 {note.filename}
-										{note.filesize && (
-											<span style={{ color: "var(--text-muted)" }}>
-												({(note.filesize / 1024).toFixed(1)} KB)
-											</span>
-										)}
-									</a>
-								)}
-							</div>
-						))}
+						{caseData.notes.map((note) => {
+							const isLong = (note.text?.length ?? 0) > NOTE_COLLAPSE_THRESHOLD;
+							const isExpanded = expandedNotes.has(note.id);
+							const displayText = isLong && !isExpanded
+								? note.text!.slice(0, NOTE_COLLAPSE_THRESHOLD) + "…"
+								: note.text;
+							return (
+								<div className="note" key={note.id}>
+									<span className="note-meta">
+										<strong>{note.createdBy}</strong> · {formatDate(note.createdOn)}
+									</span>
+									{note.subject && <p className="note-text" style={{ fontWeight: 600 }}>{note.subject}</p>}
+									{displayText && <p className="note-text" style={{ whiteSpace: "pre-wrap" }}>{displayText}</p>}
+									{isLong && (
+										<button
+											onClick={() => toggleNote(note.id)}
+											style={{ background: "none", border: "none", color: "var(--primary)", cursor: "pointer", padding: 0, fontSize: "0.85rem" }}
+										>
+											{isExpanded ? "Show less" : "Show more"}
+										</button>
+									)}
+									{note.isAttachment && note.filename && (
+										<a
+											className="note-attachment"
+											href={api.getAttachmentUrl(caseData.id, note.id)}
+											target="_blank"
+											rel="noreferrer"
+										>
+											📎 {note.filename}
+											{note.filesize && (
+												<span style={{ color: "var(--text-muted)" }}>
+													({(note.filesize / 1024).toFixed(1)} KB)
+												</span>
+											)}
+										</a>
+									)}
+								</div>
+							);
+						})}
 
 						{isActive && (
 							<div className="add-note">
