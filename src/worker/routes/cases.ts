@@ -124,29 +124,55 @@ cases.get("/:id", async (c) => {
 		escalationEngineerName: raw["_am_escalationengineer_value@OData.Community.Display.V1.FormattedValue"] ?? null,
 	};
 
-	// Fetch case notes (vtx_casenote entity) — expand createdby to get the author name
-	const noteSelect = "subject,description,createdon";
-	const noteExpand = "createdby($select=fullname)";
-	const annotRes = await d365Fetch(
-		c.env,
-		`/vtx_casenotes?$filter=_regardingobjectid_value eq '${id}'&$select=${noteSelect}&$expand=${noteExpand}&$orderby=createdon asc`
-	);
+	// Fetch case notes and attachments in parallel
+	const [caseNoteRes, attachmentRes] = await Promise.all([
+		d365Fetch(
+			c.env,
+			`/vtx_casenotes?$filter=_regardingobjectid_value eq '${id}'&$select=subject,description,createdon&$expand=createdby($select=fullname)&$orderby=createdon asc`
+		),
+		d365Fetch(
+			c.env,
+			`/annotations?$filter=_objectid_value eq '${id}' and isdocument eq true&$select=annotationid,subject,filename,mimetype,filesize,createdon&$expand=createdby($select=fullname)&$orderby=createdon asc`
+		),
+	]);
 
-	let notes: any[] = [];
-	if (annotRes.ok) {
-		const annotData = await annotRes.json() as { value: any[] };
-		notes = annotData.value.map((n: any) => ({
-			id: n.activityid,
-			subject: n.subject,
-			text: n.description,
-			isAttachment: false,
-			filename: null,
-			mimetype: null,
-			filesize: null,
-			createdOn: n.createdon,
-			createdBy: n.createdby?.fullname ?? "Unknown",
-		}));
+	const notes: any[] = [];
+
+	if (caseNoteRes.ok) {
+		const data = await caseNoteRes.json() as { value: any[] };
+		for (const n of data.value) {
+			notes.push({
+				id: n.activityid,
+				subject: n.subject,
+				text: n.description,
+				isAttachment: false,
+				filename: null,
+				mimetype: null,
+				filesize: null,
+				createdOn: n.createdon,
+				createdBy: n.createdby?.fullname ?? "Unknown",
+			});
+		}
 	}
+
+	if (attachmentRes.ok) {
+		const data = await attachmentRes.json() as { value: any[] };
+		for (const n of data.value) {
+			notes.push({
+				id: n.annotationid,
+				subject: n.subject,
+				text: null,
+				isAttachment: true,
+				filename: n.filename,
+				mimetype: n.mimetype,
+				filesize: n.filesize,
+				createdOn: n.createdon,
+				createdBy: n.createdby?.fullname ?? "Unknown",
+			});
+		}
+	}
+
+	notes.sort((a, b) => a.createdOn.localeCompare(b.createdOn));
 
 	return c.json({ ...caseData, notes });
 });
