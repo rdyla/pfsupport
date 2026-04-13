@@ -124,9 +124,9 @@ cases.get("/:id", async (c) => {
 		escalationEngineerName: raw["_am_escalationengineer_value@OData.Community.Display.V1.FormattedValue"] ?? null,
 	};
 
-	// Fetch case notes (vtx_casenote entity) — expand ownerid to get the author name
-	const noteSelect = "vtx_casenoteId,subject,description,createdon";
-	const noteExpand = "ownerid($select=fullname)";
+	// Fetch case notes (vtx_casenote entity) — expand createdby to get the author name
+	const noteSelect = "subject,description,createdon";
+	const noteExpand = "createdby($select=fullname)";
 	const annotRes = await d365Fetch(
 		c.env,
 		`/vtx_casenotes?$filter=_regardingobjectid_value eq '${id}'&$select=${noteSelect}&$expand=${noteExpand}&$orderby=createdon asc`
@@ -136,7 +136,7 @@ cases.get("/:id", async (c) => {
 	if (annotRes.ok) {
 		const annotData = await annotRes.json() as { value: any[] };
 		notes = annotData.value.map((n: any) => ({
-			id: n.vtx_casenoteId,
+			id: n.activityid,
 			subject: n.subject,
 			text: n.description,
 			isAttachment: false,
@@ -144,7 +144,7 @@ cases.get("/:id", async (c) => {
 			mimetype: null,
 			filesize: null,
 			createdOn: n.createdon,
-			createdBy: n.ownerid?.fullname ?? "Unknown",
+			createdBy: n.createdby?.fullname ?? "Unknown",
 		}));
 	}
 
