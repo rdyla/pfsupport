@@ -14,6 +14,9 @@ const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 // Auth routes (public — no middleware)
 app.route("/api/auth", authRouter);
 
+// Legacy redirect — old provider sends users here
+app.get("/Login.aspx", (c) => c.redirect("/", 301));
+
 // Welcome page (public)
 app.get("/", (c) =>
 	c.env.ASSETS.fetch(new Request(new URL("/index.html", c.req.url)))
