@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { authMiddleware, type PortalUser } from "./auth";
 import casesRouter from "./routes/cases";
-import kbRouter from "./routes/kb";
 import accountsRouter from "./routes/accounts";
 import usersRouter from "./routes/users";
 import authRouter from "./routes/auth";
@@ -55,29 +54,8 @@ app.get("/api/portal/me/contacts", async (c) => {
 	return c.json(data.value.map((ct: any) => ({ id: ct.contactid, name: ct.fullname, email: ct.emailaddress1 })));
 });
 
-// Customer's sold technology vendors (for vendor KB search)
-app.get("/api/portal/me/vendors", async (c) => {
-	const user = c.get("user");
-	if (!user.accountId) return c.json([]);
-
-	const res = await d365Fetch(c.env,
-		`/am_soldtechnologies?$filter=_am_account_value eq '${user.accountId}'&$select=_am_vendor_value&$top=50`,
-		{ headers: { Prefer: 'odata.include-annotations="OData.Community.Display.V1.FormattedValue"' } }
-	);
-	if (!res.ok) return c.json([]);
-
-	const data = await res.json() as { value: Record<string, string>[] };
-	const names = data.value
-		.map(v => v["_am_vendor_value@OData.Community.Display.V1.FormattedValue"])
-		.filter(Boolean);
-	return c.json([...new Set(names)]);
-});
-
 // Cases routes
 app.route("/api/portal/cases", casesRouter);
-
-// Knowledge base routes
-app.route("/api/portal/kb", kbRouter);
 
 // Accounts + contacts lookup
 app.route("/api/portal/accounts", accountsRouter);

@@ -109,19 +109,6 @@ export function formatDate(iso: string): string {
 	});
 }
 
-export interface KBArticleMeta {
-	id: string;
-	title: string;
-	description: string;
-	category: string;
-	createdAt: string;
-	createdBy: string;
-}
-
-export interface KBArticle extends KBArticleMeta {
-	content: string;
-}
-
 export interface AccountResult {
 	id: string;
 	name: string;
@@ -162,19 +149,6 @@ export const caseContacts = {
 		}),
 	remove: (caseId: string, contactId: string) =>
 		request(`/api/portal/cases/${caseId}/contacts/${contactId}`, { method: "DELETE" }),
-};
-
-export const kb = {
-	list: () => request<KBArticleMeta[]>("/api/portal/kb"),
-	get: (id: string) => request<KBArticle>(`/api/portal/kb/${id}`),
-	upload: (data: { title: string; description: string; category: string; markdown: string }) =>
-		request<{ id: string; title: string }>("/api/portal/kb/upload", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(data),
-		}),
-	delete: (id: string) =>
-		request(`/api/portal/kb/${id}`, { method: "DELETE" }),
 };
 
 export function fileToBase64(file: File): Promise<string> {

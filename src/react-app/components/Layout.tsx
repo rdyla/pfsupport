@@ -84,9 +84,6 @@ export default function Layout({ user, children }: Props) {
 				<NavLink to="/cases" className={({ isActive }) => `nav-tab${isActive ? " active" : ""}`}>
 					Support Cases
 				</NavLink>
-				<NavLink to="/kb" className={({ isActive }) => `nav-tab${isActive ? " active" : ""}`}>
-					Knowledge Base
-				</NavLink>
 			</nav>
 			<main className="main">{children}</main>
 		</div>
