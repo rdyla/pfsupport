@@ -47,9 +47,13 @@ async function notifyZoomNewCase(env: Env, ticketNumber: string, customerName: s
 		const message = `New support case opened — ${ticketNumber}: ${title} (submitted by ${customerName})`;
 		const timestamp = Date.now().toString();
 		const url = env.ZOOM_WEBHOOK_URL.replace("{timestamp}", timestamp);
+		const encoder = new TextEncoder();
+		const key = await crypto.subtle.importKey("raw", encoder.encode(env.ZOOM_WEBHOOK_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+		const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(`message&${timestamp}&${message}`));
+		const authorization = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 		await fetch(url, {
 			method: "POST",
-			headers: { "Authorization": env.ZOOM_WEBHOOK_SECRET, "Content-Type": "application/json" },
+			headers: { "Authorization": authorization, "Content-Type": "application/json" },
 			body: message,
 		});
 	} catch {
