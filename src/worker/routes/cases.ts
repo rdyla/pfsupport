@@ -317,10 +317,11 @@ cases.post("/", async (c) => {
 		}),
 	});
 
-	const fetchRes = await d365Fetch(c.env, `/incidents(${newId})?$select=incidentid,ticketnumber`);
+	const fetchRes = await d365Fetch(c.env, `/incidents(${newId})?$select=incidentid,ticketnumber&$expand=customerid_account($select=name)`);
 	const created = fetchRes.ok ? await fetchRes.json() as any : {};
 	const ticketNumber = created.ticketnumber ?? "";
-	await notifyZoomNewCase(c.env, ticketNumber, newId, user.accountName, user.name, body.title);
+	const accountName = created.customerid_account?.name ?? user.accountName;
+	await notifyZoomNewCase(c.env, ticketNumber, newId, accountName, user.name, body.title);
 	return c.json({ id: newId, ticketNumber }, 201);
 });
 
