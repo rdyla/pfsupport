@@ -53,7 +53,10 @@ async function notifyZoomNewCase(env: Env, ticketNumber: string, customerName: s
 		const encoder = new TextEncoder();
 		const key = await crypto.subtle.importKey("raw", encoder.encode(env.ZOOM_WEBHOOK_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
 		const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(`message&${timestamp}&${message}`));
-		const authorization = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+		const bytes = new Uint8Array(sig);
+		let binary = "";
+		for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+		const authorization = btoa(binary);
 		console.log("[zoom] sending notification, url:", url);
 		const res = await fetch(url, {
 			method: "POST",
