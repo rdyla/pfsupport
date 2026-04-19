@@ -42,7 +42,10 @@ async function getAccountId(contactId: string, env: Env): Promise<string | null>
 }
 
 async function notifyZoomNewCase(env: Env, ticketNumber: string, customerName: string, title: string): Promise<void> {
-	if (!env.ZOOM_WEBHOOK_URL || !env.ZOOM_WEBHOOK_SECRET) return;
+	if (!env.ZOOM_WEBHOOK_URL || !env.ZOOM_WEBHOOK_SECRET) {
+		console.log("[zoom] skipped: ZOOM_WEBHOOK_URL or ZOOM_WEBHOOK_SECRET not set");
+		return;
+	}
 	try {
 		const message = `New support case opened — ${ticketNumber}: ${title} (submitted by ${customerName})`;
 		const timestamp = Date.now().toString();
@@ -51,13 +54,16 @@ async function notifyZoomNewCase(env: Env, ticketNumber: string, customerName: s
 		const key = await crypto.subtle.importKey("raw", encoder.encode(env.ZOOM_WEBHOOK_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
 		const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(`message&${timestamp}&${message}`));
 		const authorization = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-		await fetch(url, {
+		console.log("[zoom] sending notification, url:", url);
+		const res = await fetch(url, {
 			method: "POST",
 			headers: { "Authorization": authorization, "Content-Type": "application/json" },
 			body: message,
 		});
-	} catch {
-		// Notification failure must not block case creation
+		const responseText = await res.text();
+		console.log("[zoom] response:", res.status, responseText);
+	} catch (err) {
+		console.error("[zoom] error:", err);
 	}
 }
 
