@@ -1,90 +1,62 @@
-# React + Vite + Hono + Cloudflare Workers
+# Packet Fusion Support Portal
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/vite-react-template)
+A customer-facing support portal built on React, Hono, and Cloudflare Workers, backed by Dynamics 365 CRM.
 
-This template provides a minimal setup for building a React application with TypeScript and Vite, designed to run on Cloudflare Workers. It features hot module replacement, ESLint integration, and the flexibility of Workers deployments.
+## Stack
 
-![React + TypeScript + Vite + Cloudflare Workers](https://imagedelivery.net/wSMYJvS3Xw-n339CbDyDIA/fc7b4b62-442b-4769-641b-ad4422d74300/public)
+- **React + TypeScript + Vite** — frontend
+- **Hono** — API layer running on Cloudflare Workers
+- **Dynamics 365** — case and contact data
+- **Cloudflare Access** — authentication
+- **Cloudflare KV** — session and token caching
 
-<!-- dash-content-start -->
+## Features
 
-🚀 Supercharge your web development with this powerful stack:
+- Customer and internal user login via Cloudflare Access
+- Submit and track support cases
+- View case activity feed with notes and attachments
+- Internal users can open cases on behalf of customer accounts
+- **Zoom Team Chat notifications** — a message is posted to the support channel whenever a new case is opened, including the customer name, case summary, submitter, and a direct CRM link
 
-- [**React**](https://react.dev/) - A modern UI library for building interactive interfaces
-- [**Vite**](https://vite.dev/) - Lightning-fast build tooling and development server
-- [**Hono**](https://hono.dev/) - Ultralight, modern backend framework
-- [**Cloudflare Workers**](https://developers.cloudflare.com/workers/) - Edge computing platform for global deployment
+## Environment Variables
 
-### ✨ Key Features
-
-- 🔥 Hot Module Replacement (HMR) for rapid development
-- 📦 TypeScript support out of the box
-- 🛠️ ESLint configuration included
-- ⚡ Zero-config deployment to Cloudflare's global network
-- 🎯 API routes with Hono's elegant routing
-- 🔄 Full-stack development setup
-- 🔎 Built-in Observability to monitor your Worker
-
-Get started in minutes with local development or deploy directly via the Cloudflare dashboard. Perfect for building modern, performant web applications at the edge.
-
-<!-- dash-content-end -->
-
-## Getting Started
-
-To start a new project with this template, run:
-
-```bash
-npm create cloudflare@latest -- --template=cloudflare/templates/vite-react-template
-```
-
-A live deployment of this template is available at:
-[https://react-vite-template.templates.workers.dev](https://react-vite-template.templates.workers.dev)
+| Variable | Description |
+|---|---|
+| `D365_CLIENT_ID` | Dynamics 365 app registration client ID |
+| `D365_CLIENT_SECRET` | Dynamics 365 app registration client secret |
+| `D365_TENANT_ID` | Azure AD tenant ID |
+| `CF_ACCESS_AUD` | Cloudflare Access application audience tag |
+| `CF_TEAM_DOMAIN` | Cloudflare Access team domain |
+| `ANTHROPIC_API_KEY` | Anthropic API key |
+| `ZOOM_WEBHOOK_URL` | Zoom incoming webhook endpoint URL |
+| `ZOOM_WEBHOOK_SECRET` | Zoom incoming webhook signing secret |
 
 ## Development
 
-Install dependencies:
-
 ```bash
 npm install
-```
-
-Start the development server with:
-
-```bash
 npm run dev
 ```
 
-Your application will be available at [http://localhost:5173](http://localhost:5173).
+App runs at [http://localhost:5173](http://localhost:5173).
 
-## Production
-
-Build your project for production:
-
-```bash
-npm run build
-```
-
-Preview your build locally:
-
-```bash
-npm run preview
-```
-
-Deploy your project to Cloudflare Workers:
+## Deployment
 
 ```bash
 npm run build && npm run deploy
 ```
 
-Monitor your workers:
+Monitor live worker logs:
 
 ```bash
 npx wrangler tail
 ```
 
-## Additional Resources
+## Release Notes
 
-- [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
-- [Vite Documentation](https://vitejs.dev/guide/)
-- [React Documentation](https://reactjs.org/)
-- [Hono Documentation](https://hono.dev/)
+### April 2026
+- **Zoom Team Chat notifications** — new cases posted to the support channel in real time with customer name, case summary, submitter, and CRM deep link
+- Redirect `/Login.aspx` to home page for legacy provider links
+- Show more/less toggle on long notes in the activity feed
+- Strip HTML from email bodies; suppress TAC-Update notification emails
+- Show attachments alongside case notes in the portal
