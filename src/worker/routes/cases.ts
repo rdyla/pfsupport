@@ -41,13 +41,15 @@ async function getAccountId(contactId: string, env: Env): Promise<string | null>
 	return data._parentcustomerid_value ?? null;
 }
 
-async function notifyZoomNewCase(env: Env, ticketNumber: string, customerName: string, title: string): Promise<void> {
+async function notifyZoomNewCase(env: Env, ticketNumber: string, caseId: string, accountName: string | null, submittedBy: string, title: string): Promise<void> {
 	if (!env.ZOOM_WEBHOOK_URL || !env.ZOOM_WEBHOOK_SECRET) {
 		console.log("[zoom] skipped: ZOOM_WEBHOOK_URL or ZOOM_WEBHOOK_SECRET not set");
 		return;
 	}
 	try {
-		const message = `New support case opened — ${ticketNumber}: ${title} (submitted by ${customerName})`;
+		const crmLink = `https://packetfusioncrm.crm.dynamics.com/main.aspx?etn=incident&id=${caseId}&pagetype=entityrecord`;
+		const customer = accountName ?? submittedBy;
+		const message = `New support case opened — ${ticketNumber}: ${title}\nCustomer: ${customer} | Submitted by: ${submittedBy}\n${crmLink}`;
 		const timestamp = Date.now().toString();
 		const url = `${env.ZOOM_WEBHOOK_URL}?format=message&timestamp=${timestamp}`;
 		const encoder = new TextEncoder();
@@ -318,7 +320,7 @@ cases.post("/", async (c) => {
 	const fetchRes = await d365Fetch(c.env, `/incidents(${newId})?$select=incidentid,ticketnumber`);
 	const created = fetchRes.ok ? await fetchRes.json() as any : {};
 	const ticketNumber = created.ticketnumber ?? "";
-	await notifyZoomNewCase(c.env, ticketNumber, user.name, body.title);
+	await notifyZoomNewCase(c.env, ticketNumber, newId, user.accountName, user.name, body.title);
 	return c.json({ id: newId, ticketNumber }, 201);
 });
 
