@@ -41,6 +41,26 @@ async function getAccountId(contactId: string, env: Env): Promise<string | null>
 	return data._parentcustomerid_value ?? null;
 }
 
+async function notifyZoomNewCase(env: Env, ticketNumber: string, customerName: string, title: string): Promise<void> {
+	if (!env.ZOOM_WEBHOOK_URL || !env.ZOOM_WEBHOOK_SECRET) return;
+	try {
+		const message = `New support case opened — ${ticketNumber}: ${title} (submitted by ${customerName})`;
+		const timestamp = Date.now().toString();
+		const url = env.ZOOM_WEBHOOK_URL.replace("{timestamp}", timestamp);
+		const encoder = new TextEncoder();
+		const key = await crypto.subtle.importKey("raw", encoder.encode(env.ZOOM_WEBHOOK_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+		const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(`${timestamp}:${message}`));
+		const authorization = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, "0")).join("");
+		await fetch(url, {
+			method: "POST",
+			headers: { "Authorization": authorization, "Content-Type": "application/json" },
+			body: message,
+		});
+	} catch {
+		// Notification failure must not block case creation
+	}
+}
+
 // GET /api/portal/cases
 cases.get("/", async (c) => {
 	const user = c.get("user");
@@ -288,7 +308,9 @@ cases.post("/", async (c) => {
 
 	const fetchRes = await d365Fetch(c.env, `/incidents(${newId})?$select=incidentid,ticketnumber`);
 	const created = fetchRes.ok ? await fetchRes.json() as any : {};
-	return c.json({ id: newId, ticketNumber: created.ticketnumber ?? "" }, 201);
+	const ticketNumber = created.ticketnumber ?? "";
+	await notifyZoomNewCase(c.env, ticketNumber, user.name, body.title);
+	return c.json({ id: newId, ticketNumber }, 201);
 });
 
 // POST /api/portal/cases/:id/notes
