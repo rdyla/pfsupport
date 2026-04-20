@@ -72,6 +72,35 @@ async function notifyZoomNewCase(env: Env, ticketNumber: string, caseId: string,
 	}
 }
 
+// GET /api/portal/cases/metadata/picklists — internal-only helper to inspect option-set values
+cases.get("/metadata/picklists", async (c) => {
+	const user = c.get("user");
+	if (!user.isInternal) {
+		return c.json({ error: "Forbidden" }, 403);
+	}
+
+	const sevRes = await d365Fetch(
+		c.env,
+		"/EntityDefinitions(LogicalName='incident')/Attributes(LogicalName='severitycode')/Microsoft.Dynamics.CRM.PicklistAttributeMetadata?$select=LogicalName&$expand=OptionSet($select=Options)"
+	);
+	const statusRes = await d365Fetch(
+		c.env,
+		"/EntityDefinitions(LogicalName='incident')/Attributes(LogicalName='statuscode')/Microsoft.Dynamics.CRM.StatusAttributeMetadata?$select=LogicalName&$expand=OptionSet($select=Options)"
+	);
+
+	const parseOptions = (raw: any) =>
+		(raw?.OptionSet?.Options ?? []).map((o: any) => ({
+			value: o.Value,
+			label: o.Label?.UserLocalizedLabel?.Label ?? null,
+			state: o.State ?? null,
+		}));
+
+	const severity = sevRes.ok ? parseOptions(await sevRes.json()) : { error: await sevRes.text() };
+	const status = statusRes.ok ? parseOptions(await statusRes.json()) : { error: await statusRes.text() };
+
+	return c.json({ severitycode: severity, statuscode: status });
+});
+
 // GET /api/portal/cases
 cases.get("/", async (c) => {
 	const user = c.get("user");
