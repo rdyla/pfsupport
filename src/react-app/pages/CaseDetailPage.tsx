@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { accounts, api, me, fileToBase64, formatDate, type CaseDetail, type ContactResult, type PortalUser, type UserResult } from "../api";
+import { accounts, api, me, fileToBase64, formatDate, severityBadgeClass, type CaseDetail, type ContactResult, type PortalUser, type UserResult } from "../api";
 import UserSearch from "../components/UserSearch";
 
 interface Props {
@@ -332,8 +332,12 @@ export default function CaseDetailPage({ user }: Props) {
 							<span className={`badge badge-${caseData.state.toLowerCase()}`}>{caseData.status}</span>
 						</div>
 						<div className="meta-item">
-							<span className="meta-label">Priority</span>
-							<span className={`badge badge-${caseData.priority.toLowerCase()}`}>{caseData.priority}</span>
+							<span className="meta-label">Severity</span>
+							{caseData.severity ? (
+								<span className={`badge ${severityBadgeClass(caseData.severity)}`}>{caseData.severity}</span>
+							) : (
+								<span className="meta-value">—</span>
+							)}
 						</div>
 						<div className="meta-item">
 							<span className="meta-label">Assigned To</span>

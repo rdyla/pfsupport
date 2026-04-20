@@ -1,3 +1,35 @@
+// severitycode option-set values in D365
+export const SEVERITY = {
+	P1: 1,
+	P2: 173590000,
+	P3: 173590001,
+	E1: 100000000,
+	E2: 100000001,
+} as const;
+
+export const CUSTOMER_SEVERITY_OPTIONS: Array<{ value: number; label: string }> = [
+	{ value: SEVERITY.P1, label: "P1" },
+	{ value: SEVERITY.P2, label: "P2" },
+	{ value: SEVERITY.P3, label: "P3" },
+];
+
+export const STAFF_SEVERITY_OPTIONS: Array<{ value: number; label: string }> = [
+	...CUSTOMER_SEVERITY_OPTIONS,
+	{ value: SEVERITY.E1, label: "E1" },
+	{ value: SEVERITY.E2, label: "E2" },
+];
+
+export function severityBadgeClass(label: string | null | undefined): string {
+	switch (label) {
+		case "P1": return "badge-p1";
+		case "P2": return "badge-p2";
+		case "P3": return "badge-p3";
+		case "E1": return "badge-e1";
+		case "E2": return "badge-e2";
+		default: return "badge-normal";
+	}
+}
+
 export interface PortalUser {
 	email: string;
 	contactId: string;
@@ -10,7 +42,7 @@ export interface Case {
 	id: string;
 	ticketNumber: string;
 	title: string;
-	priority: string;
+	severity: string | null;
 	status: string;
 	state: string;
 	createdOn: string;
@@ -35,6 +67,7 @@ export interface CaseDetail extends Case {
 	modifiedOn: string;
 	statecode: number;
 	statuscode: number;
+	severitycode: number | null;
 	accountId: string | null;
 	ownerId: string | null;
 	primaryContactId: string | null;
@@ -69,7 +102,7 @@ export const api = {
 		return request<Case[]>(`/api/portal/cases${qs ? `?${qs}` : ""}`);
 	},
 	getCase: (id: string) => request<CaseDetail>(`/api/portal/cases/${id}`),
-	createCase: (data: { title: string; description: string; prioritycode: number; accountId?: string; primaryContactId?: string; notificationContactId?: string; escalationEngineerId?: string }) =>
+	createCase: (data: { title: string; description: string; severitycode: number; accountId?: string; primaryContactId?: string; notificationContactId?: string; escalationEngineerId?: string }) =>
 		request<{ id: string; ticketNumber: string }>("/api/portal/cases", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },

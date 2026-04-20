@@ -22,14 +22,11 @@ function stripHtml(html: string | null): string | null {
 		.trim();
 }
 
-const PRIORITY_MAP: Record<number, string> = { 1: "High", 2: "Normal", 3: "Low" };
-const STATUS_MAP: Record<number, string> = {
-	1: "In Progress",
-	2: "On Hold",
-	5: "Problem Solved",
-	1000: "Information Provided",
-};
 const STATE_MAP: Record<number, string> = { 0: "Active", 1: "Resolved", 2: "Cancelled" };
+
+// severitycode option-set values (D365 incident)
+const CUSTOMER_SEVERITY_VALUES = new Set([1, 173590000, 173590001]); // P1, P2, P3
+const DEFAULT_SEVERITY = 173590001; // P3
 
 async function getAccountId(contactId: string, env: Env): Promise<string | null> {
 	const res = await d365Fetch(
@@ -72,35 +69,6 @@ async function notifyZoomNewCase(env: Env, ticketNumber: string, caseId: string,
 	}
 }
 
-// GET /api/portal/cases/metadata/picklists — internal-only helper to inspect option-set values
-cases.get("/metadata/picklists", async (c) => {
-	const user = c.get("user");
-	if (!user.isInternal) {
-		return c.json({ error: "Forbidden" }, 403);
-	}
-
-	const sevRes = await d365Fetch(
-		c.env,
-		"/EntityDefinitions(LogicalName='incident')/Attributes(LogicalName='severitycode')/Microsoft.Dynamics.CRM.PicklistAttributeMetadata?$select=LogicalName&$expand=OptionSet($select=Options)"
-	);
-	const statusRes = await d365Fetch(
-		c.env,
-		"/EntityDefinitions(LogicalName='incident')/Attributes(LogicalName='statuscode')/Microsoft.Dynamics.CRM.StatusAttributeMetadata?$select=LogicalName&$expand=OptionSet($select=Options)"
-	);
-
-	const parseOptions = (raw: any) =>
-		(raw?.OptionSet?.Options ?? []).map((o: any) => ({
-			value: o.Value,
-			label: o.Label?.UserLocalizedLabel?.Label ?? null,
-			state: o.State ?? null,
-		}));
-
-	const severity = sevRes.ok ? parseOptions(await sevRes.json()) : { error: await sevRes.text() };
-	const status = statusRes.ok ? parseOptions(await statusRes.json()) : { error: await statusRes.text() };
-
-	return c.json({ severitycode: severity, statuscode: status });
-});
-
 // GET /api/portal/cases
 cases.get("/", async (c) => {
 	const user = c.get("user");
@@ -133,7 +101,7 @@ cases.get("/", async (c) => {
 	}
 
 	const top = search ? 100 : 500;
-	const select = "incidentid,ticketnumber,title,prioritycode,statuscode,statecode,createdon,_customerid_value";
+	const select = "incidentid,ticketnumber,title,severitycode,statuscode,statecode,createdon,_customerid_value";
 	const expand = "owninguser($select=fullname)";
 	const res = await d365Fetch(
 		c.env,
@@ -151,8 +119,8 @@ cases.get("/", async (c) => {
 		id: r.incidentid,
 		ticketNumber: r.ticketnumber,
 		title: r.title,
-		priority: PRIORITY_MAP[r.prioritycode] ?? "Normal",
-		status: r.statecode === 0 ? (STATUS_MAP[r.statuscode] ?? "In Progress") : (STATE_MAP[r.statecode] ?? "Resolved"),
+		severity: r["severitycode@OData.Community.Display.V1.FormattedValue"] ?? null,
+		status: r["statuscode@OData.Community.Display.V1.FormattedValue"] ?? (STATE_MAP[r.statecode] ?? "Active"),
 		state: STATE_MAP[r.statecode] ?? "Active",
 		createdOn: r.createdon,
 		owner: r.owninguser?.fullname ?? null,
@@ -166,7 +134,7 @@ cases.get("/", async (c) => {
 cases.get("/:id", async (c) => {
 	const { id } = c.req.param();
 
-	const select = "incidentid,ticketnumber,title,description,prioritycode,statuscode,statecode,createdon,modifiedon,_customerid_value,_primarycontactid_value,_amc_notificationcontact1_value,_am_escalationengineer_value";
+	const select = "incidentid,ticketnumber,title,description,severitycode,statuscode,statecode,createdon,modifiedon,_customerid_value,_primarycontactid_value,_amc_notificationcontact1_value,_am_escalationengineer_value";
 	const expand = "owninguser($select=fullname,systemuserid)";
 	const res = await d365Fetch(c.env, `/incidents(${id})?$select=${select}&$expand=${expand}`,
 		{ headers: { Prefer: 'odata.include-annotations="OData.Community.Display.V1.FormattedValue"' } });
@@ -182,8 +150,9 @@ cases.get("/:id", async (c) => {
 		ticketNumber: raw.ticketnumber,
 		title: raw.title,
 		description: raw.description,
-		priority: PRIORITY_MAP[raw.prioritycode] ?? "Normal",
-		status: raw.statecode === 0 ? (STATUS_MAP[raw.statuscode] ?? "In Progress") : (STATE_MAP[raw.statecode] ?? "Resolved"),
+		severity: raw["severitycode@OData.Community.Display.V1.FormattedValue"] ?? null,
+		severitycode: raw.severitycode as number,
+		status: raw["statuscode@OData.Community.Display.V1.FormattedValue"] ?? (STATE_MAP[raw.statecode] ?? "Active"),
 		state: STATE_MAP[raw.statecode] ?? "Active",
 		statecode: raw.statecode as number,
 		statuscode: raw.statuscode as number,
@@ -279,16 +248,21 @@ cases.get("/:id", async (c) => {
 // POST /api/portal/cases
 cases.post("/", async (c) => {
 	const user = c.get("user");
-	const body = await c.req.json() as { title: string; description: string; prioritycode: number; accountId?: string; primaryContactId?: string; notificationContactId?: string; escalationEngineerId?: string };
+	const body = await c.req.json() as { title: string; description: string; severitycode?: number; accountId?: string; primaryContactId?: string; notificationContactId?: string; escalationEngineerId?: string };
 
 	if (!body.title || !body.description) {
 		return c.json({ error: "Title and description are required" }, 400);
 	}
 
+	const severitycode = body.severitycode ?? DEFAULT_SEVERITY;
+	if (!user.isInternal && !CUSTOMER_SEVERITY_VALUES.has(severitycode)) {
+		return c.json({ error: "Invalid severity" }, 400);
+	}
+
 	const payload: any = {
 		title: body.title,
 		description: body.description,
-		prioritycode: body.prioritycode ?? 2,
+		severitycode,
 	};
 
 	if (user.isInternal) {

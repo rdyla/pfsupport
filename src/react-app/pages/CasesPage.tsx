@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api, formatDate, type Case, type PortalUser } from "../api";
+import { api, formatDate, severityBadgeClass, type Case, type PortalUser } from "../api";
 
 interface Props {
 	user: PortalUser | null;
 }
 
-const STATUS_OPTIONS = ["Active", "All Statuses", "In Progress", "On Hold", "Resolved", "Cancelled"];
-const PRIORITY_OPTIONS = ["All Priorities", "High", "Normal", "Low"];
+const STATUS_OPTIONS = ["Active", "All Statuses", "Resolved", "Cancelled"];
+const SEVERITY_OPTIONS = ["All Severities", "P1", "P2", "P3", "E1", "E2"];
 const PAGE_SIZE = 50;
 
 export default function CasesPage({ user }: Props) {
@@ -17,7 +17,7 @@ export default function CasesPage({ user }: Props) {
 	const [error, setError] = useState("");
 	const [search, setSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState("Active");
-	const [priorityFilter, setPriorityFilter] = useState("All Priorities");
+	const [severityFilter, setSeverityFilter] = useState("All Severities");
 	const [mineOnly, setMineOnly] = useState(true);
 	const [page, setPage] = useState(0);
 	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -43,10 +43,9 @@ export default function CasesPage({ user }: Props) {
 	};
 
 	const filtered = cases.filter((c) => {
-		const matchStatus = statusFilter === "All Statuses" ||
-			(statusFilter === "Active" ? (c.status === "In Progress" || c.status === "On Hold") : c.status === statusFilter);
-		const matchPriority = priorityFilter === "All Priorities" || c.priority === priorityFilter;
-		return matchStatus && matchPriority;
+		const matchStatus = statusFilter === "All Statuses" || c.state === statusFilter;
+		const matchSeverity = severityFilter === "All Severities" || c.severity === severityFilter;
+		return matchStatus && matchSeverity;
 	});
 
 	const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
@@ -91,15 +90,15 @@ export default function CasesPage({ user }: Props) {
 				<select value={statusFilter} onChange={(e) => resetPage(() => setStatusFilter(e.target.value))} className="filter-select">
 					{STATUS_OPTIONS.map((o) => <option key={o}>{o}</option>)}
 				</select>
-				<select value={priorityFilter} onChange={(e) => resetPage(() => setPriorityFilter(e.target.value))} className="filter-select">
-					{PRIORITY_OPTIONS.map((o) => <option key={o}>{o}</option>)}
+				<select value={severityFilter} onChange={(e) => resetPage(() => setSeverityFilter(e.target.value))} className="filter-select">
+					{SEVERITY_OPTIONS.map((o) => <option key={o}>{o}</option>)}
 				</select>
-				{(search || statusFilter !== "Active" || priorityFilter !== "All Priorities") && (
+				{(search || statusFilter !== "Active" || severityFilter !== "All Severities") && (
 					<button
 						className="btn btn-secondary btn-sm"
 						onClick={() => {
 							if (debounceRef.current) clearTimeout(debounceRef.current);
-							setSearch(""); setStatusFilter("Active"); setPriorityFilter("All Priorities"); setPage(0);
+							setSearch(""); setStatusFilter("Active"); setSeverityFilter("All Severities"); setPage(0);
 							fetchCases(undefined, mineOnly);
 						}}
 					>
@@ -124,7 +123,7 @@ export default function CasesPage({ user }: Props) {
 									<th>Ticket #</th>
 									<th>Title</th>
 									{isStaff && <th>Account</th>}
-									<th>Priority</th>
+									<th>Severity</th>
 									<th>Status</th>
 									{isStaff && <th>Owner</th>}
 									<th>Opened</th>
@@ -143,9 +142,11 @@ export default function CasesPage({ user }: Props) {
 											</td>
 										)}
 										<td className="cell-nowrap">
-											<span className={`badge badge-${c.priority.toLowerCase()}`}>
-												{c.priority}
-											</span>
+											{c.severity ? (
+												<span className={`badge ${severityBadgeClass(c.severity)}`}>{c.severity}</span>
+											) : (
+												<span style={{ color: "var(--text-muted)" }}>—</span>
+											)}
 										</td>
 										<td className="cell-nowrap">
 											<span className={`badge badge-${c.state.toLowerCase()}`}>
@@ -171,7 +172,9 @@ export default function CasesPage({ user }: Props) {
 									<div className="cases-card-title">{c.title}</div>
 									<div className="cases-card-row">
 										<span className={`badge badge-${c.state.toLowerCase()}`}>{c.status}</span>
-										<span className={`badge badge-${c.priority.toLowerCase()}`}>{c.priority}</span>
+										{c.severity && (
+											<span className={`badge ${severityBadgeClass(c.severity)}`}>{c.severity}</span>
+										)}
 										<span className="ticket-number cases-card-meta">{c.ticketNumber}</span>
 									</div>
 									<div className="cases-card-row">

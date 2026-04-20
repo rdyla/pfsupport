@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { accounts, api, type AccountResult, type ContactResult, type PortalUser, type UserResult } from "../api";
+import { accounts, api, CUSTOMER_SEVERITY_OPTIONS, SEVERITY, STAFF_SEVERITY_OPTIONS, type AccountResult, type ContactResult, type PortalUser, type UserResult } from "../api";
 import AccountSearch from "../components/AccountSearch";
 import UserSearch from "../components/UserSearch";
 
@@ -12,7 +12,8 @@ export default function NewCasePage({ user }: Props) {
 	const navigate = useNavigate();
 	const [title, setTitle] = useState("");
 	const [description, setDescription] = useState("");
-	const [prioritycode, setPrioritycode] = useState(2);
+	const [severitycode, setSeveritycode] = useState<number>(SEVERITY.P3);
+	const severityOptions = user?.isInternal ? STAFF_SEVERITY_OPTIONS : CUSTOMER_SEVERITY_OPTIONS;
 	const [account, setAccount] = useState<AccountResult | null>(null);
 	const [accountContacts, setAccountContacts] = useState<ContactResult[]>([]);
 	const [primaryContactId, setPrimaryContactId] = useState("");
@@ -39,14 +40,15 @@ export default function NewCasePage({ user }: Props) {
 			const result = await api.createCase({
 				title,
 				description,
-				prioritycode,
+				severitycode,
 				...(user?.isInternal && account ? { accountId: account.id } : {}),
 				...(primaryContactId ? { primaryContactId } : {}),
 				...(notificationContactId ? { notificationContactId } : {}),
 				...(escalationEngineer ? { escalationEngineerId: escalationEngineer.id } : {}),
 			});
+			const severityLabel = severityOptions.find((o) => o.value === severitycode)?.label ?? "P3";
 			navigate("/cases/confirmation", {
-				state: { id: result.id, ticketNumber: result.ticketNumber, title, prioritycode },
+				state: { id: result.id, ticketNumber: result.ticketNumber, title, severityLabel },
 			});
 		} catch (e: any) {
 			setError(e.message);
@@ -81,15 +83,15 @@ export default function NewCasePage({ user }: Props) {
 						/>
 					</div>
 					<div className="form-group">
-						<label htmlFor="priority">Priority</label>
+						<label htmlFor="severity">Severity</label>
 						<select
-							id="priority"
-							value={prioritycode}
-							onChange={(e) => setPrioritycode(Number(e.target.value))}
+							id="severity"
+							value={severitycode}
+							onChange={(e) => setSeveritycode(Number(e.target.value))}
 						>
-							<option value={1}>High</option>
-							<option value={2}>Normal</option>
-							<option value={3}>Low</option>
+							{severityOptions.map((o) => (
+								<option key={o.value} value={o.value}>{o.label}</option>
+							))}
 						</select>
 					</div>
 					<div className="form-group">

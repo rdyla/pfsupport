@@ -230,6 +230,11 @@
 .badge-high { background: #fee2e2; color: var(--danger); }
 .badge-normal { background: #dbeafe; color: #1d4ed8; }
 .badge-low { background: #f3f4f6; color: #6b7280; }
+.badge-p1 { background: #fee2e2; color: var(--danger); }
+.badge-p2 { background: #dbeafe; color: #1d4ed8; }
+.badge-p3 { background: #f3f4f6; color: #6b7280; }
+.badge-e1 { background: #7f1d1d; color: #fff; }
+.badge-e2 { background: #c2410c; color: #fff; }
 
 /* Case detail */
 .case-detail-grid {

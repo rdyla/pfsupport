@@ -1,14 +1,12 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import { severityBadgeClass } from "../api";
 
 interface ConfirmationState {
 	id: string;
 	ticketNumber: string;
 	title: string;
-	prioritycode: number;
+	severityLabel: string;
 }
-
-const PRIORITY_LABEL: Record<number, string> = { 1: "High", 2: "Normal", 3: "Low" };
-const PRIORITY_CLASS: Record<number, string> = { 1: "badge-high", 2: "badge-normal", 3: "badge-low" };
 
 export default function CaseConfirmationPage() {
 	const navigate = useNavigate();
@@ -21,7 +19,7 @@ export default function CaseConfirmationPage() {
 		return null;
 	}
 
-	const { id, ticketNumber, title, prioritycode } = state;
+	const { id, ticketNumber, title, severityLabel } = state;
 
 	return (
 		<div className="card form-card" style={{ maxWidth: 600, textAlign: "center", padding: "2.5rem 2rem" }}>
@@ -41,10 +39,8 @@ export default function CaseConfirmationPage() {
 					<span style={{ maxWidth: "70%", textAlign: "right" }}>{title}</span>
 				</div>
 				<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-					<span style={{ fontSize: "0.8rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Priority</span>
-					<span className={`badge ${PRIORITY_CLASS[prioritycode] ?? "badge-normal"}`}>
-						{PRIORITY_LABEL[prioritycode] ?? "Normal"}
-					</span>
+					<span style={{ fontSize: "0.8rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Severity</span>
+					<span className={`badge ${severityBadgeClass(severityLabel)}`}>{severityLabel}</span>
 				</div>
 			</div>
 
