@@ -149,9 +149,8 @@ export default function CaseDetailPage({ user }: Props) {
 	const isCancelled = caseData.statecode === 2;
 	const isOnHold = caseData.statuscode === 2;
 
-	const closedDateStr = caseData.closedOn ?? caseData.modifiedOn;
-	const daysSinceClosed = closedDateStr
-		? (Date.now() - new Date(closedDateStr).getTime()) / (1000 * 60 * 60 * 24)
+	const daysSinceClosed = caseData.modifiedOn
+		? (Date.now() - new Date(caseData.modifiedOn).getTime()) / (1000 * 60 * 60 * 24)
 		: Infinity;
 	const canCustomerReopen = !user?.isInternal && (isResolved || isCancelled) && daysSinceClosed <= 30;
 
