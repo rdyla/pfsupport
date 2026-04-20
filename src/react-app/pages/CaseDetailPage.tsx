@@ -288,11 +288,6 @@ export default function CaseDetailPage({ user }: Props) {
 								/>
 								{statusError && <div className="error-msg">{statusError}</div>}
 								<div className="status-actions">
-									{isActive && !isOnHold && (
-										<button className="btn btn-sm btn-hold" onClick={() => updateStatus("hold")} disabled={statusSubmitting}>
-											Put On Hold
-										</button>
-									)}
 									{isActive && isOnHold && (
 										<button className="btn btn-sm btn-reopen" onClick={() => updateStatus("in-progress")} disabled={statusSubmitting}>
 											Mark In Progress

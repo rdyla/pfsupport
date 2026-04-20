@@ -438,11 +438,6 @@ cases.post("/:id/status", async (c) => {
 			method: "PATCH",
 			body: JSON.stringify({ statecode: 0, statuscode: 1 }),
 		});
-	} else if (body.action === "hold") {
-		res = await d365Fetch(c.env, `/incidents(${id})`, {
-			method: "PATCH",
-			body: JSON.stringify({ statuscode: 2 }),
-		});
 	} else if (body.action === "in-progress") {
 		res = await d365Fetch(c.env, `/incidents(${id})`, {
 			method: "PATCH",
