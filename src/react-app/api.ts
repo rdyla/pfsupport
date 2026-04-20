@@ -32,6 +32,8 @@ export interface Note {
 
 export interface CaseDetail extends Case {
 	description: string;
+	modifiedOn: string;
+	closedOn: string | null;
 	statecode: number;
 	statuscode: number;
 	accountId: string | null;

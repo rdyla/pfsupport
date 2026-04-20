@@ -146,7 +146,14 @@ export default function CaseDetailPage({ user }: Props) {
 
 	const isActive = caseData.statecode === 0;
 	const isResolved = caseData.statecode === 1;
+	const isCancelled = caseData.statecode === 2;
 	const isOnHold = caseData.statuscode === 2;
+
+	const closedDateStr = caseData.closedOn ?? caseData.modifiedOn;
+	const daysSinceClosed = closedDateStr
+		? (Date.now() - new Date(closedDateStr).getTime()) / (1000 * 60 * 60 * 24)
+		: Infinity;
+	const canCustomerReopen = !user?.isInternal && (isResolved || isCancelled) && daysSinceClosed <= 30;
 
 	return (
 		<>
@@ -248,7 +255,29 @@ export default function CaseDetailPage({ user }: Props) {
 							</div>
 						)}
 
-						{(isActive || isResolved) && (
+						{canCustomerReopen && (
+							<div className="status-update">
+								<h4>Reopen Case</h4>
+								<p style={{ fontSize: "13px", color: "var(--text-muted)", margin: "0 0 0.5rem" }}>
+									This case was closed {Math.floor(daysSinceClosed)} day{Math.floor(daysSinceClosed) === 1 ? "" : "s"} ago. You can reopen it within 30 days of closure.
+								</p>
+								<textarea
+									value={statusComment}
+									onChange={(e) => setStatusComment(e.target.value)}
+									placeholder="Reason for reopening…"
+									rows={2}
+									style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "0.5rem 0.75rem", resize: "vertical", fontSize: "13px" }}
+								/>
+								{statusError && <div className="error-msg">{statusError}</div>}
+								<div className="status-actions">
+									<button className="btn btn-sm btn-reopen" onClick={() => updateStatus("reopen")} disabled={statusSubmitting}>
+										{statusSubmitting ? "Updating…" : "Reopen Case"}
+									</button>
+								</div>
+							</div>
+						)}
+
+						{user?.isInternal && (isActive || isResolved) && (
 							<div className="status-update">
 								<h4>Update Status</h4>
 								<textarea

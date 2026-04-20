@@ -137,7 +137,7 @@ cases.get("/", async (c) => {
 cases.get("/:id", async (c) => {
 	const { id } = c.req.param();
 
-	const select = "incidentid,ticketnumber,title,description,prioritycode,statuscode,statecode,createdon,_customerid_value,_primarycontactid_value,_amc_notificationcontact1_value,_am_escalationengineer_value";
+	const select = "incidentid,ticketnumber,title,description,prioritycode,statuscode,statecode,createdon,modifiedon,actualend,_customerid_value,_primarycontactid_value,_amc_notificationcontact1_value,_am_escalationengineer_value";
 	const expand = "owninguser($select=fullname,systemuserid)";
 	const res = await d365Fetch(c.env, `/incidents(${id})?$select=${select}&$expand=${expand}`,
 		{ headers: { Prefer: 'odata.include-annotations="OData.Community.Display.V1.FormattedValue"' } });
@@ -159,6 +159,8 @@ cases.get("/:id", async (c) => {
 		statecode: raw.statecode as number,
 		statuscode: raw.statuscode as number,
 		createdOn: raw.createdon,
+		modifiedOn: raw.modifiedon,
+		closedOn: raw.actualend ?? null,
 		owner: raw.owninguser?.fullname ?? null,
 		ownerId: raw.owninguser?.systemuserid ?? null,
 		accountId: raw._customerid_value ?? null,
@@ -393,6 +395,26 @@ cases.post("/:id/status", async (c) => {
 	const { id } = c.req.param();
 	const user = c.get("user");
 	const body = await c.req.json() as { action: string; comment?: string };
+
+	// Customers can only reopen, and only within 30 days of closure.
+	if (!user.isInternal) {
+		if (body.action !== "reopen") {
+			return c.json({ error: "Forbidden" }, 403);
+		}
+		const check = await d365Fetch(c.env, `/incidents(${id})?$select=statecode,actualend,modifiedon`);
+		if (!check.ok) {
+			return c.json({ error: await check.text() }, check.status as any);
+		}
+		const incident = await check.json() as { statecode: number; actualend: string | null; modifiedon: string };
+		if (incident.statecode !== 1 && incident.statecode !== 2) {
+			return c.json({ error: "Case is not closed" }, 400);
+		}
+		const closedAt = incident.actualend ?? incident.modifiedon;
+		const daysSince = (Date.now() - new Date(closedAt).getTime()) / (1000 * 60 * 60 * 24);
+		if (daysSince > 30) {
+			return c.json({ error: "Case was closed more than 30 days ago" }, 403);
+		}
+	}
 
 	let res: Response;
 
