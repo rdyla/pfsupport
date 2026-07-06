@@ -1,4 +1,4 @@
-import { mkdirSync, renameSync, copyFileSync } from "fs";
+import { mkdirSync, renameSync } from "fs";
 
 const clientDir = "dist/client";
 const portalDir = `${clientDir}/portal`;
@@ -8,8 +8,9 @@ mkdirSync(portalDir, { recursive: true });
 renameSync(`${clientDir}/index.html`, `${portalDir}/index.html`);
 renameSync(`${clientDir}/assets`, `${portalDir}/assets`);
 
-// Place the public welcome page at the root as index.html
-copyFileSync(`public/welcome.html`, `${clientDir}/index.html`);
+// Note: no index.html is placed at the site root. With no matching asset there,
+// the Worker's "/" handler runs and redirects visitors straight into the portal
+// (see src/worker/index.ts). The migration page remains available at /welcome
+// (served from the public welcome.html that Vite copies into dist/client).
 
 console.log("post-build: portal assets moved to dist/client/portal/");
-console.log("post-build: welcome.html placed at dist/client/index.html");

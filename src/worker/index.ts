@@ -14,11 +14,17 @@ const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 app.route("/api/auth", authRouter);
 
 // Legacy redirect — old provider sends users here
-app.get("/Login.aspx", (c) => c.redirect("/", 301));
+app.get("/Login.aspx", (c) => c.redirect("/portal/cases", 301));
 
-// Welcome page (public)
-app.get("/", (c) =>
-	c.env.ASSETS.fetch(new Request(new URL("/index.html", c.req.url)))
+// Root — send users straight into the portal. Unauthenticated visitors are
+// redirected to /login automatically by the SPA's 401 handler, so this is the
+// "log straight in" entry point. The migration announcement page is retained
+// and still viewable at /welcome if it's ever needed again.
+app.get("/", (c) => c.redirect("/portal/cases", 302));
+
+// Migration announcement (retained; no longer shown at the root by default)
+app.get("/welcome", (c) =>
+	c.env.ASSETS.fetch(new Request(new URL("/welcome.html", c.req.url)))
 );
 
 // Login page (public)
